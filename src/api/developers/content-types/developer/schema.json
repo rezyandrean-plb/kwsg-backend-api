@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "developers",
+  "info": {
+    "singularName": "developer",
+    "pluralName": "developers",
+    "displayName": "Developers"
+  },
+  "options": {
+    "comment": "Property developers and companies"
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "logo_url": { "type": "string" },
+    "website": { "type": "string" },
+    "contact_email": { "type": "email" },
+    "contact_phone": { "type": "string" }
+  }
+} 

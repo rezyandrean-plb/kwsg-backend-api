@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "project",
+  "info": {
+    "singularName": "project",
+    "pluralName": "projects",
+    "displayName": "Projects"
+  },
+  "options": {
+    "comment": "Main projects table containing all property development information"
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "project_name": { "type": "string" },
+    "slug": { "type": "uid", "targetField": "name", "required": true },
+    "title": { "type": "string" },
+    "location": { "type": "string" },
+    "address": { "type": "text" },
+    "type": { "type": "string" },
+    "price": { "type": "string" },
+    "price_from": { "type": "string" },
+    "price_per_sqft": { "type": "string" },
+    "bedrooms": { "type": "string" },
+    "bathrooms": { "type": "string" },
+    "size": { "type": "string" },
+    "units": { "type": "string" },
+    "developer": { "type": "string" },
+    "completion": { "type": "string" },
+    "description": { "type": "text" },
+    "features": { "type": "json" },
+    "district": { "type": "string" },
+    "tenure": { "type": "string" },
+    "property_type": { "type": "string" },
+    "status": { "type": "string" },
+    "total_units": { "type": "string" },
+    "total_floors": { "type": "string" },
+    "site_area": { "type": "string" },
+    "latitude": { "type": "decimal" },
+    "longitude": { "type": "decimal" }
+  }
+}

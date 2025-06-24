@@ -1,0 +1,5 @@
+/**
+ * projects service
+ */
+
+export default () => ({});

@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "project_images",
+  "info": {
+    "singularName": "project-image",
+    "pluralName": "project-images",
+    "displayName": "Project Images"
+  },
+  "options": {
+    "comment": "Images associated with property projects"
+  },
+  "attributes": {
+    "project_id": { "type": "integer", "required": true },
+    "image_url": { "type": "string", "required": true },
+    "alt_text": { "type": "string" },
+    "display_order": { "type": "integer", "default": 0 },
+    "is_primary": { "type": "boolean", "default": false },
+    "caption": { "type": "text" }
+  }
+} 

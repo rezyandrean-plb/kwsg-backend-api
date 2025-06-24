@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "floor_plans",
+  "info": {
+    "singularName": "floor-plan",
+    "pluralName": "floor-plans",
+    "displayName": "Floor Plans"
+  },
+  "options": {
+    "comment": "Floor plans for property units"
+  },
+  "attributes": {
+    "project_id": { "type": "integer", "required": true },
+    "unit_type": { "type": "string", "required": true },
+    "bedrooms": { "type": "string", "required": true },
+    "bathrooms": { "type": "string", "required": true },
+    "size_sqft": { "type": "decimal", "required": true },
+    "price": { "type": "string", "required": true },
+    "floor_plan_image": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "is_available": { "type": "boolean", "default": true }
+  }
+} 

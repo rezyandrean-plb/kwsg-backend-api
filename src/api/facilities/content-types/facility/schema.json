@@ -1,0 +1,17 @@
+{
+  "kind": "collectionType",
+  "collectionName": "facilities",
+  "info": {
+    "singularName": "facility",
+    "pluralName": "facilities",
+    "displayName": "Facilities"
+  },
+  "options": {
+    "comment": "Facilities and amenities available in property projects"
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "icon": { "type": "string" }
+  }
+} 
