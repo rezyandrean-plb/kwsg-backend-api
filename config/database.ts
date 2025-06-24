@@ -30,14 +30,14 @@ export default ({ env }) => {
         database: env('DATABASE_NAME', 'strapi'),
         user: env('DATABASE_USERNAME', 'strapi'),
         password: env('DATABASE_PASSWORD', 'strapi'),
-        ssl: env.bool('DATABASE_SSL', false) && {
-          rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', false),
+        ssl: env.bool('DATABASE_SSL', false) ? {
+          rejectUnauthorized: false,
           ca: env('DATABASE_SSL_CA', undefined),
           key: env('DATABASE_SSL_KEY', undefined),
           cert: env('DATABASE_SSL_CERT', undefined),
           capath: env('DATABASE_SSL_CAPATH', undefined),
           cipher: env('DATABASE_SSL_CIPHER', undefined),
-        },
+        } : false,
         schema: env('DATABASE_SCHEMA', 'public'),
       },
       pool: { 
