@@ -1,0 +1,41 @@
+# Strapi Cloud Environment Variables
+# Copy these to your Strapi Cloud environment variables
+
+# App Configuration
+HOST=0.0.0.0
+PORT=1337
+PUBLIC_URL=https://your-app-name.strapiapp.com
+IS_PROXIED=true
+
+# Security Keys (Generate new ones for production)
+APP_KEYS=your-app-key-1,your-app-key-2,your-app-key-3,your-app-key-4
+API_TOKEN_SALT=your-api-token-salt
+ADMIN_JWT_SECRET=your-admin-jwt-secret
+TRANSFER_TOKEN_SALT=your-transfer-token-salt
+JWT_SECRET=your-jwt-secret
+ENCRYPTION_KEY=your-encryption-key
+
+# Database Configuration (Your AWS RDS)
+DATABASE_CLIENT=postgres
+DATABASE_HOST=kw-1.cspkrkicfu7p.ap-southeast-1.rds.amazonaws.com
+DATABASE_PORT=5432
+DATABASE_NAME=postgres
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=kwpostgres
+DATABASE_SSL=true
+DATABASE_SSL_REJECT_UNAUTHORIZED=false
+
+# Database Pool Configuration
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+DATABASE_CONNECTION_TIMEOUT=60000
+DATABASE_IDLE_TIMEOUT=30000
+DATABASE_REAP_INTERVAL=1000
+DATABASE_CREATE_RETRY_INTERVAL=200
+
+# CORS Configuration
+CORS_ORIGIN=https://your-frontend-domain.com,http://localhost:3000
+
+# Cloud-specific settings
+CRON_ENABLED=false
+WEBHOOKS_POPULATE_RELATIONS=false 
