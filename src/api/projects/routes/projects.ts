@@ -66,5 +66,17 @@ export default {
         middlewares: [],
       },
     },
+    
+    // Test route to verify database connection
+    {
+      method: 'GET',
+      path: '/projects/test',
+      handler: 'projects.test',
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 };

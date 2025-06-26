@@ -8,12 +8,36 @@ export default {
     try {
       const knex = strapi.db.connection;
       
-      const data = await knex('projects')
-        .select('*')
-        .orderBy('created_at', 'desc');
+      // Get projects with unit availability price information
+      const data = await knex('projects as p')
+        .select(
+          'p.*',
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN CONCAT(MIN(ua.price), ' - ', MAX(ua.price))
+              ELSE p.price 
+            END as display_price
+          `),
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN MIN(ua.price) 
+              ELSE p.price_from 
+            END as price_reference
+          `),
+          knex.raw(`
+            COUNT(DISTINCT ua.unit_type) as unit_types_count,
+            SUM(ua.available_units) as total_available_units
+          `)
+        )
+        .leftJoin('unit_availability as ua', 'p.id', 'ua.project_id')
+        .groupBy('p.id')
+        .orderBy('p.created_at', 'desc');
       
       return { data };
     } catch (err) {
+      console.error('Error in find method:', err);
       ctx.throw(500, err);
     }
   },
@@ -24,9 +48,32 @@ export default {
       const { id } = ctx.params;
       const knex = strapi.db.connection;
       
-      // Get the main project data from projects table
-      const project = await knex('projects')
-        .where('id', id)
+      // Get the main project data from projects table with unit availability price info
+      const project = await knex('projects as p')
+        .select(
+          'p.*',
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN CONCAT(MIN(ua.price), ' - ', MAX(ua.price))
+              ELSE p.price 
+            END as display_price
+          `),
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN MIN(ua.price) 
+              ELSE p.price_from 
+            END as price_reference
+          `),
+          knex.raw(`
+            COUNT(DISTINCT ua.unit_type) as unit_types_count,
+            SUM(ua.available_units) as total_available_units
+          `)
+        )
+        .leftJoin('unit_availability as ua', 'p.id', 'ua.project_id')
+        .where('p.id', id)
+        .groupBy('p.id')
         .first();
       
       if (!project) {
@@ -166,14 +213,62 @@ export default {
       const { location } = ctx.params;
       const knex = strapi.db.connection;
       
-      const data = await knex('projects')
-        .where('location', 'like', `%${location}%`)
-        .orderBy('created_at', 'desc')
-        .select('*');
+      const data = await knex('projects as p')
+        .select(
+          'p.*',
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN CONCAT(MIN(ua.price), ' - ', MAX(ua.price))
+              ELSE p.price 
+            END as display_price
+          `),
+          knex.raw(`
+            CASE 
+              WHEN MIN(ua.price) IS NOT NULL AND MIN(ua.price) != '' 
+              THEN MIN(ua.price) 
+              ELSE p.price_from 
+            END as price_reference
+          `),
+          knex.raw(`
+            COUNT(DISTINCT ua.unit_type) as unit_types_count,
+            SUM(ua.available_units) as total_available_units
+          `)
+        )
+        .leftJoin('unit_availability as ua', 'p.id', 'ua.project_id')
+        .where('p.location', 'like', `%${location}%`)
+        .groupBy('p.id')
+        .orderBy('p.created_at', 'desc');
       
       return { data };
     } catch (err) {
       ctx.throw(500, err);
+    }
+  },
+
+  // Test method to verify database connection
+  async test(ctx) {
+    try {
+      console.log('Test method called');
+      
+      const knex = strapi.db.connection;
+      
+      // Simple query to test connection
+      const result = await knex('projects').select('id', 'name').limit(3);
+      
+      console.log('Test result:', result);
+      
+      ctx.body = {
+        success: true,
+        data: result,
+        message: 'Database connection working'
+      };
+    } catch (err) {
+      console.error('Test method error:', err);
+      ctx.body = {
+        success: false,
+        error: err.message
+      };
     }
   },
 
