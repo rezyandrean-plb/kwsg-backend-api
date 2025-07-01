@@ -156,15 +156,38 @@ export default {
       const knex = strapi.db.connection;
       const projectData = ctx.request.body;
       
-      // Insert into projects table
-      const result = await knex('projects').insert(projectData).returning('id');
+      // Validate required fields
+      if (!projectData.name) {
+        return ctx.badRequest('Project name is required');
+      }
+      
+      // Extract images from projectData to handle separately
+      const { images, ...projectFields } = projectData;
+      
+      // Insert into projects table (excluding images field)
+      const result = await knex('projects').insert(projectFields).returning('id');
       const id = Array.isArray(result) ? result[0] : result;
       
-      // Fetch the created project
+      // Handle images if provided
+      if (images && Array.isArray(images) && images.length > 0) {
+        const imageRecords = images.map((image, index) => ({
+          project_id: id,
+          image_url: image.url || image,
+          display_order: image.display_order || index,
+          alt_text: image.alt_text || '',
+          is_primary: image.is_primary || false,
+          caption: image.caption || ''
+        }));
+        
+        await knex('project_images').insert(imageRecords);
+      }
+      
+      // Fetch the created project with related data
       const data = await knex('projects').where('id', id).first();
       
       return { data };
     } catch (err) {
+      console.error('Error creating project:', err);
       ctx.throw(400, err);
     }
   },
@@ -176,10 +199,33 @@ export default {
       const knex = strapi.db.connection;
       const updateData = ctx.request.body;
       
-      // Update the project in projects table
+      // Extract images from updateData to handle separately
+      const { images, ...projectFields } = updateData;
+      
+      // Update the project in projects table (excluding images field)
       await knex('projects')
         .where('id', id)
-        .update(updateData);
+        .update(projectFields);
+      
+      // Handle images if provided
+      if (images !== undefined) {
+        // Delete existing images for this project
+        await knex('project_images').where('project_id', id).del();
+        
+        // Insert new images if provided
+        if (Array.isArray(images) && images.length > 0) {
+          const imageRecords = images.map((image, index) => ({
+            project_id: id,
+            image_url: image.url || image,
+            display_order: image.display_order || index,
+            alt_text: image.alt_text || '',
+            is_primary: image.is_primary || false,
+            caption: image.caption || ''
+          }));
+          
+          await knex('project_images').insert(imageRecords);
+        }
+      }
       
       // Fetch the updated project
       const data = await knex('projects').where('id', id).first();
