@@ -475,6 +475,44 @@ export interface ApiFloorPlansFloorPlan extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPressArticlesPressArticle
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'press_articles';
+  info: {
+    displayName: 'Press Articles';
+    pluralName: 'press-articles';
+    singularName: 'press-article';
+  };
+  options: {
+    comment: 'Press articles and news coverage about KW Singapore';
+    draftAndPublish: false;
+  };
+  attributes: {
+    articleContent: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    imageUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    link: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::press-articles.press-article'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'>;
+    source: Schema.Attribute.String & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    year: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiProjectImagesProjectImage
   extends Struct.CollectionTypeSchema {
   collectionName: 'project_images';
@@ -1077,6 +1115,7 @@ declare module '@strapi/strapi' {
       'api::developers.developer': ApiDevelopersDeveloper;
       'api::facilities.facility': ApiFacilitiesFacility;
       'api::floor-plans.floor-plan': ApiFloorPlansFloorPlan;
+      'api::press-articles.press-article': ApiPressArticlesPressArticle;
       'api::project-images.project-image': ApiProjectImagesProjectImage;
       'api::projects.project': ApiProjectsProject;
       'plugin::content-releases.release': PluginContentReleasesRelease;
