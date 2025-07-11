@@ -8,12 +8,36 @@ export default {
     try {
       const knex = strapi.db.connection;
       
+      // Debug: Check what database we're connected to
+      const dbInfo = await knex.raw('SELECT current_database(), current_user');
+      console.log('Database info:', dbInfo.rows[0]);
+      
+      // Debug: List all tables
+      const tables = await knex.raw(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        ORDER BY table_name
+      `);
+      console.log('Available tables:', tables.rows.map(r => r.table_name));
+      
+      // Check if press_articles table exists
+      const tableExists = await knex.schema.hasTable('press_articles');
+      console.log('press_articles table exists:', tableExists);
+      
+      if (!tableExists) {
+        return { data: [], message: 'Table does not exist' };
+      }
+      
       // Get all press articles ordered by date (newest first)
       const data = await knex('press_articles')
         .select('*')
         .orderBy('date', 'desc');
       
       console.log('Found data:', data.length, 'records');
+      if (data.length > 0) {
+        console.log('Sample record:', data[0]);
+      }
       
       return { data };
     } catch (err) {
