@@ -264,5 +264,45 @@ export default {
     } catch (err) {
       ctx.throw(500, err);
     }
+  },
+
+  // Test database connection
+  async testDb(ctx) {
+    try {
+      const knex = strapi.db.connection;
+      
+      // Get database info
+      const dbInfo = await knex.raw('SELECT current_database(), current_user');
+      
+      // List all tables
+      const tables = await knex.raw(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        ORDER BY table_name
+      `);
+      
+      // Check press_articles table
+      const tableExists = await knex.schema.hasTable('press_articles');
+      
+      // Try to get data from press_articles
+      let pressArticlesData = [];
+      if (tableExists) {
+        pressArticlesData = await knex('press_articles').select('*').limit(3);
+      }
+      
+      return {
+        data: {
+          database: dbInfo.rows[0],
+          tables: tables.rows.map(r => r.table_name),
+          pressArticlesTableExists: tableExists,
+          pressArticlesCount: pressArticlesData.length,
+          sampleData: pressArticlesData
+        }
+      };
+    } catch (err) {
+      console.error('Error in testDb method:', err);
+      return { error: err.message };
+    }
   }
 }; 

@@ -106,5 +106,16 @@ export default {
         auth: false,
       },
     },
+    // Test endpoint to check database connection
+    {
+      method: 'GET',
+      path: '/press-articles/test-db',
+      handler: 'press-articles.testDb',
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 }; 

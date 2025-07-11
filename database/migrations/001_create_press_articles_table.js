@@ -6,6 +6,13 @@
 
 module.exports = {
   async up(knex) {
+    // Check if table already exists
+    const tableExists = await knex.schema.hasTable('press_articles');
+    if (tableExists) {
+      console.log('press_articles table already exists, skipping creation');
+      return;
+    }
+    
     await knex.schema.createTable('press_articles', (table) => {
       table.increments('id').primary();
       table.string('title').notNullable();
