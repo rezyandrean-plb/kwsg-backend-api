@@ -8,6 +8,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Get a single press article by ID
@@ -18,6 +19,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Get press article by slug
@@ -28,6 +30,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Get press articles by year
@@ -38,6 +41,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Get press articles by source
@@ -48,6 +52,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Create a new press article
@@ -98,6 +103,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
   ],
