@@ -8,10 +8,20 @@ export default {
     try {
       const knex = strapi.db.connection;
       
+      // First, let's check if the table exists and has data
+      const tableExists = await knex.schema.hasTable('press_articles');
+      console.log('Table exists:', tableExists);
+      
+      if (!tableExists) {
+        return { data: [], message: 'Table does not exist' };
+      }
+      
       // Get all press articles ordered by date (newest first)
       const data = await knex('press_articles')
         .select('*')
         .orderBy('date', 'desc');
+      
+      console.log('Found data:', data.length, 'records');
       
       return { data };
     } catch (err) {
