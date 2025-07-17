@@ -65,5 +65,26 @@ export default {
         middlewares: [],
       },
     },
+    // Custom route to get floor plans by project name
+    {
+      method: 'GET',
+      path: '/floor-plans/project-name/:projectName',
+      handler: 'floor-plans.findByProjectName',
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    // Test route to verify database connection
+    {
+      method: 'GET',
+      path: '/floor-plans/test',
+      handler: 'floor-plans.test',
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 }; 

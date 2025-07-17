@@ -78,5 +78,16 @@ export default {
         auth: false,
       },
     },
+    // Simple test route without database
+    {
+      method: 'GET',
+      path: '/projects/simple-test',
+      handler: 'projects.simpleTest',
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 };

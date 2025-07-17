@@ -63,6 +63,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Update a press article
@@ -73,6 +74,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Delete a press article
@@ -83,6 +85,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Bulk create press articles (for seeding data)
@@ -93,6 +96,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     // Search press articles

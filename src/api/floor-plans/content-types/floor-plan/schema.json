@@ -10,13 +10,18 @@
     "comment": "Floor plans for property units"
   },
   "attributes": {
-    "project_id": { "type": "integer", "required": true },
-    "unit_type": { "type": "string", "required": true },
-    "bedrooms": { "type": "string", "required": true },
-    "bathrooms": { "type": "string", "required": true },
-    "size_sqft": { "type": "decimal", "required": true },
-    "price": { "type": "string", "required": true },
-    "floor_plan_image": { "type": "string", "required": true },
+    "project_id": { "type": "integer" },
+    "project_name": { "type": "string" },
+    "floor_plan_id": { "type": "string" },
+    "floor_plan_type": { "type": "string" },
+    "floor_plan_name": { "type": "string" },
+    "img": { "type": "string" },
+    "unit_type": { "type": "string" },
+    "bedrooms": { "type": "string" },
+    "bathrooms": { "type": "string" },
+    "size_sqft": { "type": "decimal" },
+    "price": { "type": "string" },
+    "floor_plan_image": { "type": "string" },
     "description": { "type": "text" },
     "is_available": { "type": "boolean", "default": true }
   }

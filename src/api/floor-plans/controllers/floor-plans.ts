@@ -107,6 +107,24 @@ export default {
     }
   },
 
+  // Get floor plans by project name
+  async findByProjectName(ctx) {
+    try {
+      const { projectName } = ctx.params;
+      const knex = strapi.db.connection;
+      
+      const data = await knex('floor_plans')
+        .where('project_name', projectName)
+        .where('is_available', true)
+        .orderBy('floor_plan_name', 'asc')
+        .select('*');
+      
+      return { data };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  },
+
   // Get floor plans by unit type
   async findByUnitType(ctx) {
     try {
@@ -122,6 +140,33 @@ export default {
       return { data };
     } catch (err) {
       ctx.throw(500, err);
+    }
+  },
+
+  // Test database connection
+  async test(ctx) {
+    try {
+      const knex = strapi.db.connection;
+      
+      // Check if floor_plans table exists
+      const tableExists = await knex.schema.hasTable('floor_plans');
+      
+      // Try to get data from floor_plans
+      let floorPlansData = [];
+      if (tableExists) {
+        floorPlansData = await knex('floor_plans').select('*').limit(3);
+      }
+      
+      return {
+        data: {
+          tableExists,
+          floorPlansCount: floorPlansData.length,
+          sampleData: floorPlansData
+        }
+      };
+    } catch (err) {
+      console.error('Error in floor plans test method:', err);
+      return { error: err.message };
     }
   }
 }; 

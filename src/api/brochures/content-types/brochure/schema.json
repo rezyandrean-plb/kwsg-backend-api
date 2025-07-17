@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "brochures",
+  "info": {
+    "singularName": "brochure",
+    "pluralName": "brochures",
+    "displayName": "Brochures"
+  },
+  "options": {
+    "comment": "Brochures linked to projects by project name"
+  },
+  "attributes": {
+    "project_name": { "type": "string", "required": true },
+    "brochure_url": { "type": "string", "required": true },
+    "brochure_title": { "type": "string" },
+    "description": { "type": "text" },
+    "file_type": { "type": "string", "default": "pdf" },
+    "file_size": { "type": "integer" },
+    "is_active": { "type": "boolean", "default": true }
+  }
+} 

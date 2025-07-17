@@ -373,6 +373,41 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiBrochuresBrochure extends Struct.CollectionTypeSchema {
+  collectionName: 'brochures';
+  info: {
+    displayName: 'Brochures';
+    pluralName: 'brochures';
+    singularName: 'brochure';
+  };
+  options: {
+    comment: 'Brochures linked to projects by project name';
+    draftAndPublish: false;
+  };
+  attributes: {
+    brochure_title: Schema.Attribute.String;
+    brochure_url: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    file_size: Schema.Attribute.Integer;
+    file_type: Schema.Attribute.String & Schema.Attribute.DefaultTo<'pdf'>;
+    is_active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::brochures.brochure'
+    > &
+      Schema.Attribute.Private;
+    project_name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDevelopersDeveloper extends Struct.CollectionTypeSchema {
   collectionName: 'developers';
   info: {
@@ -450,13 +485,17 @@ export interface ApiFloorPlansFloorPlan extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    bathrooms: Schema.Attribute.String & Schema.Attribute.Required;
-    bedrooms: Schema.Attribute.String & Schema.Attribute.Required;
+    bathrooms: Schema.Attribute.String;
+    bedrooms: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    floor_plan_image: Schema.Attribute.String & Schema.Attribute.Required;
+    floor_plan_id: Schema.Attribute.String;
+    floor_plan_image: Schema.Attribute.String;
+    floor_plan_name: Schema.Attribute.String;
+    floor_plan_type: Schema.Attribute.String;
+    img: Schema.Attribute.String;
     is_available: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -464,11 +503,12 @@ export interface ApiFloorPlansFloorPlan extends Struct.CollectionTypeSchema {
       'api::floor-plans.floor-plan'
     > &
       Schema.Attribute.Private;
-    price: Schema.Attribute.String & Schema.Attribute.Required;
-    project_id: Schema.Attribute.Integer & Schema.Attribute.Required;
+    price: Schema.Attribute.String;
+    project_id: Schema.Attribute.Integer;
+    project_name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    size_sqft: Schema.Attribute.Decimal & Schema.Attribute.Required;
-    unit_type: Schema.Attribute.String & Schema.Attribute.Required;
+    size_sqft: Schema.Attribute.Decimal;
+    unit_type: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1112,6 +1152,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::brochures.brochure': ApiBrochuresBrochure;
       'api::developers.developer': ApiDevelopersDeveloper;
       'api::facilities.facility': ApiFacilitiesFacility;
       'api::floor-plans.floor-plan': ApiFloorPlansFloorPlan;
