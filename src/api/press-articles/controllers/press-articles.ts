@@ -8,19 +8,6 @@ export default {
     try {
       const knex = strapi.db.connection;
       
-      // Debug: Check what database we're connected to
-      const dbInfo = await knex.raw('SELECT current_database(), current_user');
-      console.log('Database info:', dbInfo.rows[0]);
-      
-      // Debug: List all tables
-      const tables = await knex.raw(`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        ORDER BY table_name
-      `);
-      console.log('Available tables:', tables.rows.map(r => r.table_name));
-      
       // Check if press_articles table exists
       const tableExists = await knex.schema.hasTable('press_articles');
       console.log('press_articles table exists:', tableExists);
@@ -29,10 +16,21 @@ export default {
         return { data: [], message: 'Table does not exist' };
       }
       
-      // Get all press articles ordered by date (newest first)
-      const data = await knex('press_articles')
+      // Get all press articles and parse the JSON data
+      const rawData = await knex('press_articles')
         .select('*')
-        .orderBy('date', 'desc');
+        .orderBy('created_at', 'desc');
+      
+      // Parse the JSON data field and merge with other fields
+      const data = rawData.map(row => {
+        const jsonData = row.data ? JSON.parse(row.data) : {};
+        return {
+          id: row.id,
+          ...jsonData,
+          created_at: row.created_at,
+          updated_at: row.updated_at
+        };
+      });
       
       console.log('Found data:', data.length, 'records');
       if (data.length > 0) {
@@ -52,13 +50,22 @@ export default {
       const { id } = ctx.params;
       const knex = strapi.db.connection;
       
-      const data = await knex('press_articles')
+      const rawData = await knex('press_articles')
         .where('id', id)
         .first();
       
-      if (!data) {
+      if (!rawData) {
         return ctx.notFound('Press article not found');
       }
+      
+      // Parse the JSON data field and merge with other fields
+      const jsonData = rawData.data ? JSON.parse(rawData.data) : {};
+      const data = {
+        id: rawData.id,
+        ...jsonData,
+        created_at: rawData.created_at,
+        updated_at: rawData.updated_at
+      };
       
       return { data };
     } catch (err) {
@@ -72,13 +79,22 @@ export default {
       const { slug } = ctx.params;
       const knex = strapi.db.connection;
       
-      const data = await knex('press_articles')
-        .where('slug', slug)
+      const rawData = await knex('press_articles')
+        .whereRaw("data->>'slug' = ?", [slug])
         .first();
       
-      if (!data) {
+      if (!rawData) {
         return ctx.notFound('Press article not found');
       }
+      
+      // Parse the JSON data field and merge with other fields
+      const jsonData = rawData.data ? JSON.parse(rawData.data) : {};
+      const data = {
+        id: rawData.id,
+        ...jsonData,
+        created_at: rawData.created_at,
+        updated_at: rawData.updated_at
+      };
       
       return { data };
     } catch (err) {
@@ -92,10 +108,21 @@ export default {
       const { year } = ctx.params;
       const knex = strapi.db.connection;
       
-      const data = await knex('press_articles')
-        .where('year', year)
-        .orderBy('date', 'desc')
+      const rawData = await knex('press_articles')
+        .whereRaw("data->>'year' = ?", [year])
+        .orderBy('created_at', 'desc')
         .select('*');
+      
+      // Parse the JSON data field for each record
+      const data = rawData.map(row => {
+        const jsonData = row.data ? JSON.parse(row.data) : {};
+        return {
+          id: row.id,
+          ...jsonData,
+          created_at: row.created_at,
+          updated_at: row.updated_at
+        };
+      });
       
       return { data };
     } catch (err) {
@@ -109,10 +136,21 @@ export default {
       const { source } = ctx.params;
       const knex = strapi.db.connection;
       
-      const data = await knex('press_articles')
-        .where('source', source)
-        .orderBy('date', 'desc')
+      const rawData = await knex('press_articles')
+        .whereRaw("data->>'source' = ?", [source])
+        .orderBy('created_at', 'desc')
         .select('*');
+      
+      // Parse the JSON data field for each record
+      const data = rawData.map(row => {
+        const jsonData = row.data ? JSON.parse(row.data) : {};
+        return {
+          id: row.id,
+          ...jsonData,
+          created_at: row.created_at,
+          updated_at: row.updated_at
+        };
+      });
       
       return { data };
     } catch (err) {
@@ -149,12 +187,44 @@ export default {
         return ctx.badRequest('Article source is required');
       }
       
-      // Insert into press_articles table
-      const result = await knex('press_articles').insert(articleData).returning('id');
-      const id = Array.isArray(result) ? result[0] : result;
+      // Generate slug if not provided
+      if (!articleData.slug) {
+        articleData.slug = articleData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+      }
       
-      // Fetch the created article
-      const data = await knex('press_articles').where('id', id).first();
+      // Prepare the JSON data
+      const jsonData = {
+        title: articleData.title,
+        description: articleData.description,
+        imageUrl: articleData.imageUrl,
+        link: articleData.link,
+        date: articleData.date,
+        year: articleData.year,
+        source: articleData.source,
+        slug: articleData.slug,
+        articleContent: articleData.articleContent || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Insert into press_articles table without specifying ID
+      const result = await knex('press_articles').insert({
+        data: jsonData
+      }).returning('*');
+      
+      const insertedRow = Array.isArray(result) ? result[0] : result;
+      
+      // Parse the JSON data and return formatted response
+      const jsonDataParsed = insertedRow.data ? JSON.parse(insertedRow.data) : {};
+      const data = {
+        id: insertedRow.id,
+        ...jsonDataParsed,
+        created_at: insertedRow.created_at,
+        updated_at: insertedRow.updated_at
+      };
       
       return { data };
     } catch (err) {
@@ -176,16 +246,44 @@ export default {
         return ctx.notFound('Press article not found');
       }
       
-      // Update the article
-      await knex('press_articles')
-        .where('id', id)
-        .update(updateData);
+      // Parse existing data
+      const existingJsonData = existingArticle.data ? JSON.parse(existingArticle.data) : {};
       
-      // Fetch the updated article
-      const data = await knex('press_articles').where('id', id).first();
+      // Generate slug if title is being updated and slug is not provided
+      if (updateData.title && !updateData.slug) {
+        updateData.slug = updateData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+      }
+      
+      // Merge with update data, preserving existing fields that aren't being updated
+      const updatedJsonData = {
+        ...existingJsonData,
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update the article
+      const result = await knex('press_articles')
+        .where('id', id)
+        .update({ data: updatedJsonData })
+        .returning('*');
+      
+      const updatedRow = Array.isArray(result) ? result[0] : result;
+      
+      // Parse the JSON data and return formatted response
+      const jsonDataParsed = updatedRow.data ? JSON.parse(updatedRow.data) : {};
+      const data = {
+        id: updatedRow.id,
+        ...jsonDataParsed,
+        created_at: updatedRow.created_at,
+        updated_at: updatedRow.updated_at
+      };
       
       return { data };
     } catch (err) {
+      console.error('Error updating press article:', err);
       ctx.throw(400, err);
     }
   },
@@ -231,10 +329,37 @@ export default {
         }
       }
       
-      // Insert all articles
-      const result = await knex('press_articles').insert(articlesData).returning('*');
+      // Prepare JSON data for each article
+      const jsonDataArray = articlesData.map(article => ({
+        title: article.title,
+        description: article.description,
+        imageUrl: article.imageUrl,
+        link: article.link,
+        date: article.date,
+        year: article.year,
+        source: article.source,
+        slug: article.slug,
+        articleContent: article.articleContent,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }));
       
-      return { data: result };
+      // Insert all articles
+      const insertData = jsonDataArray.map(jsonData => ({ data: jsonData }));
+      const result = await knex('press_articles').insert(insertData).returning('*');
+      
+      // Format the response
+      const data = result.map(row => {
+        const jsonData = row.data ? JSON.parse(row.data) : {};
+        return {
+          id: row.id,
+          ...jsonData,
+          created_at: row.created_at,
+          updated_at: row.updated_at
+        };
+      });
+      
+      return { data };
     } catch (err) {
       console.error('Error bulk creating press articles:', err);
       ctx.throw(400, err);
@@ -244,6 +369,7 @@ export default {
   // Search press articles
   async search(ctx) {
     try {
+      console.log('Search method called with query:', ctx.query);
       const { query } = ctx.query;
       const knex = strapi.db.connection;
       
@@ -251,17 +377,39 @@ export default {
         return ctx.badRequest('Search query is required');
       }
       
-      const data = await knex('press_articles')
-        .where(function() {
-          this.where('title', 'like', `%${query}%`)
-            .orWhere('description', 'like', `%${query}%`)
-            .orWhere('source', 'like', `%${query}%`);
-        })
-        .orderBy('date', 'desc')
+      console.log('Searching for query:', query);
+      
+      // Get all articles and filter in JavaScript
+      const rawData = await knex('press_articles')
+        .orderBy('created_at', 'desc')
         .select('*');
       
+      console.log('Found raw data:', rawData.length, 'records');
+      
+      // Parse the JSON data field and filter
+      const data = rawData
+        .map(row => {
+          const jsonData = row.data ? JSON.parse(row.data) : {};
+          return {
+            id: row.id,
+            ...jsonData,
+            created_at: row.created_at,
+            updated_at: row.updated_at
+          };
+        })
+        .filter(article => {
+          const searchTerm = query.toLowerCase();
+          return (
+            article.title?.toLowerCase().includes(searchTerm) ||
+            article.description?.toLowerCase().includes(searchTerm) ||
+            article.source?.toLowerCase().includes(searchTerm)
+          );
+        });
+      
+      console.log('Filtered data:', data.length, 'records');
       return { data };
     } catch (err) {
+      console.error('Error in search method:', err);
       ctx.throw(500, err);
     }
   },
@@ -288,7 +436,16 @@ export default {
       // Try to get data from press_articles
       let pressArticlesData = [];
       if (tableExists) {
-        pressArticlesData = await knex('press_articles').select('*').limit(3);
+        const rawData = await knex('press_articles').select('*').limit(3);
+        pressArticlesData = rawData.map(row => {
+          const jsonData = row.data ? JSON.parse(row.data) : {};
+          return {
+            id: row.id,
+            ...jsonData,
+            created_at: row.created_at,
+            updated_at: row.updated_at
+          };
+        });
       }
       
       return {
