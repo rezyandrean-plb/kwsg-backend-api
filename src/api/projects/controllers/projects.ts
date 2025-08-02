@@ -328,6 +328,25 @@ export default {
     }
   },
 
+  // Ultra simple test - no database, no complex logic
+  async ultraSimpleTest(ctx) {
+    try {
+      console.log('Ultra simple test called');
+      return { 
+        message: 'Ultra simple test successful',
+        timestamp: new Date().toISOString(),
+        status: 'OK',
+        server: 'running'
+      };
+    } catch (err) {
+      console.error('Ultra simple test error:', err);
+      return { 
+        error: err.message,
+        status: 'ERROR'
+      };
+    }
+  },
+
   // exampleAction: async (ctx, next) => {
   //   try {
   //     ctx.body = 'ok';

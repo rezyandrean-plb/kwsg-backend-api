@@ -27,6 +27,9 @@ export default {
         return {
           id: row.id,
           ...jsonData,
+          // Also include snake_case versions for frontend compatibility
+          image_url: jsonData.imageUrl,
+          article_content: jsonData.articleContent,
           created_at: row.created_at,
           updated_at: row.updated_at
         };
@@ -63,6 +66,9 @@ export default {
       const data = {
         id: rawData.id,
         ...jsonData,
+        // Also include snake_case versions for frontend compatibility
+        image_url: jsonData.imageUrl,
+        article_content: jsonData.articleContent,
         created_at: rawData.created_at,
         updated_at: rawData.updated_at
       };
@@ -92,6 +98,9 @@ export default {
       const data = {
         id: rawData.id,
         ...jsonData,
+        // Also include snake_case versions for frontend compatibility
+        image_url: jsonData.imageUrl,
+        article_content: jsonData.articleContent,
         created_at: rawData.created_at,
         updated_at: rawData.updated_at
       };
@@ -119,6 +128,9 @@ export default {
         return {
           id: row.id,
           ...jsonData,
+          // Also include snake_case versions for frontend compatibility
+          image_url: jsonData.imageUrl,
+          article_content: jsonData.articleContent,
           created_at: row.created_at,
           updated_at: row.updated_at
         };
@@ -147,6 +159,9 @@ export default {
         return {
           id: row.id,
           ...jsonData,
+          // Also include snake_case versions for frontend compatibility
+          image_url: jsonData.imageUrl,
+          article_content: jsonData.articleContent,
           created_at: row.created_at,
           updated_at: row.updated_at
         };
@@ -164,32 +179,47 @@ export default {
       const knex = strapi.db.connection;
       const articleData = ctx.request.body;
       
+      console.log('Creating press article with data:', articleData);
+      
+      // Handle both camelCase and snake_case field names from the form
+      const normalizedData = {
+        title: articleData.title || articleData.title,
+        description: articleData.description || articleData.description,
+        imageUrl: articleData.imageUrl || articleData.image_url,
+        link: articleData.link || articleData.link,
+        date: articleData.date || articleData.date,
+        year: articleData.year || articleData.year,
+        source: articleData.source || articleData.source,
+        slug: articleData.slug || articleData.slug,
+        articleContent: articleData.articleContent || articleData.article_content || ''
+      };
+      
       // Validate required fields
-      if (!articleData.title) {
+      if (!normalizedData.title) {
         return ctx.badRequest('Article title is required');
       }
-      if (!articleData.description) {
+      if (!normalizedData.description) {
         return ctx.badRequest('Article description is required');
       }
-      if (!articleData.imageUrl) {
+      if (!normalizedData.imageUrl) {
         return ctx.badRequest('Article image URL is required');
       }
-      if (!articleData.link) {
+      if (!normalizedData.link) {
         return ctx.badRequest('Article link is required');
       }
-      if (!articleData.date) {
+      if (!normalizedData.date) {
         return ctx.badRequest('Article date is required');
       }
-      if (!articleData.year) {
+      if (!normalizedData.year) {
         return ctx.badRequest('Article year is required');
       }
-      if (!articleData.source) {
+      if (!normalizedData.source) {
         return ctx.badRequest('Article source is required');
       }
       
       // Generate slug if not provided
-      if (!articleData.slug) {
-        articleData.slug = articleData.title
+      if (!normalizedData.slug) {
+        normalizedData.slug = normalizedData.title
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
@@ -197,18 +227,20 @@ export default {
       
       // Prepare the JSON data
       const jsonData = {
-        title: articleData.title,
-        description: articleData.description,
-        imageUrl: articleData.imageUrl,
-        link: articleData.link,
-        date: articleData.date,
-        year: articleData.year,
-        source: articleData.source,
-        slug: articleData.slug,
-        articleContent: articleData.articleContent || '',
+        title: normalizedData.title,
+        description: normalizedData.description,
+        imageUrl: normalizedData.imageUrl,
+        link: normalizedData.link,
+        date: normalizedData.date,
+        year: normalizedData.year,
+        source: normalizedData.source,
+        slug: normalizedData.slug,
+        articleContent: normalizedData.articleContent,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      
+      console.log('Inserting JSON data:', jsonData);
       
       // Insert into press_articles table without specifying ID
       const result = await knex('press_articles').insert({
@@ -222,10 +254,14 @@ export default {
       const data = {
         id: insertedRow.id,
         ...jsonDataParsed,
+        // Also include snake_case versions for frontend compatibility
+        image_url: jsonDataParsed.imageUrl,
+        article_content: jsonDataParsed.articleContent,
         created_at: insertedRow.created_at,
         updated_at: insertedRow.updated_at
       };
       
+      console.log('Created article with ID:', insertedRow.id);
       return { data };
     } catch (err) {
       console.error('Error creating press article:', err);
@@ -240,6 +276,8 @@ export default {
       const knex = strapi.db.connection;
       const updateData = ctx.request.body;
       
+      console.log('Updating press article ID:', id, 'with data:', updateData);
+      
       // Check if article exists
       const existingArticle = await knex('press_articles').where('id', id).first();
       if (!existingArticle) {
@@ -249,9 +287,22 @@ export default {
       // Parse existing data
       const existingJsonData = existingArticle.data ? JSON.parse(existingArticle.data) : {};
       
+      // Handle both camelCase and snake_case field names from the form
+      const normalizedUpdateData = {
+        title: updateData.title || updateData.title,
+        description: updateData.description || updateData.description,
+        imageUrl: updateData.imageUrl || updateData.image_url,
+        link: updateData.link || updateData.link,
+        date: updateData.date || updateData.date,
+        year: updateData.year || updateData.year,
+        source: updateData.source || updateData.source,
+        slug: updateData.slug || updateData.slug,
+        articleContent: updateData.articleContent || updateData.article_content
+      };
+      
       // Generate slug if title is being updated and slug is not provided
-      if (updateData.title && !updateData.slug) {
-        updateData.slug = updateData.title
+      if (normalizedUpdateData.title && !normalizedUpdateData.slug) {
+        normalizedUpdateData.slug = normalizedUpdateData.title
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
@@ -260,9 +311,11 @@ export default {
       // Merge with update data, preserving existing fields that aren't being updated
       const updatedJsonData = {
         ...existingJsonData,
-        ...updateData,
+        ...normalizedUpdateData,
         updatedAt: new Date().toISOString()
       };
+      
+      console.log('Updating with JSON data:', updatedJsonData);
       
       // Update the article
       const result = await knex('press_articles')
@@ -277,10 +330,14 @@ export default {
       const data = {
         id: updatedRow.id,
         ...jsonDataParsed,
+        // Also include snake_case versions for frontend compatibility
+        image_url: jsonDataParsed.imageUrl,
+        article_content: jsonDataParsed.articleContent,
         created_at: updatedRow.created_at,
         updated_at: updatedRow.updated_at
       };
       
+      console.log('Updated article with ID:', updatedRow.id);
       return { data };
     } catch (err) {
       console.error('Error updating press article:', err);
@@ -354,6 +411,9 @@ export default {
         return {
           id: row.id,
           ...jsonData,
+          // Also include snake_case versions for frontend compatibility
+          image_url: jsonData.imageUrl,
+          article_content: jsonData.articleContent,
           created_at: row.created_at,
           updated_at: row.updated_at
         };
@@ -370,16 +430,16 @@ export default {
   async search(ctx) {
     try {
       console.log('Search method called with query:', ctx.query);
-      const { query } = ctx.query;
+      const { q: query, year, source } = ctx.query; // Use 'q' parameter as defined in routes
       const knex = strapi.db.connection;
       
       if (!query) {
         return ctx.badRequest('Search query is required');
       }
       
-      console.log('Searching for query:', query);
+      console.log('Searching for query:', query, 'year:', year, 'source:', source);
       
-      // Get all articles and filter in JavaScript
+      // Get all articles first
       const rawData = await knex('press_articles')
         .orderBy('created_at', 'desc')
         .select('*');
@@ -389,21 +449,61 @@ export default {
       // Parse the JSON data field and filter
       const data = rawData
         .map(row => {
-          const jsonData = row.data ? JSON.parse(row.data) : {};
+          let jsonData: any = {};
+          
+          // Handle both old and new data structures
+          if (row.data) {
+            // Old structure: data is stored in JSONB field
+            try {
+              jsonData = JSON.parse(row.data);
+            } catch (parseError) {
+              console.error('Error parsing JSON data for row', row.id, ':', parseError);
+              jsonData = {};
+            }
+          } else {
+            // New structure: data is stored directly in columns
+            jsonData = {
+              title: row.title,
+              description: row.description,
+              imageUrl: row.imageUrl,
+              link: row.link,
+              date: row.date,
+              year: row.year,
+              source: row.source,
+              slug: row.slug,
+              articleContent: row.articleContent,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt
+            };
+          }
+          
           return {
             id: row.id,
             ...jsonData,
+            // Also include snake_case versions for frontend compatibility
+            image_url: jsonData.imageUrl,
+            article_content: jsonData.articleContent,
             created_at: row.created_at,
             updated_at: row.updated_at
           };
         })
         .filter(article => {
           const searchTerm = query.toLowerCase();
-          return (
+          
+          // Basic search filter
+          const matchesSearch = (
             article.title?.toLowerCase().includes(searchTerm) ||
             article.description?.toLowerCase().includes(searchTerm) ||
             article.source?.toLowerCase().includes(searchTerm)
           );
+          
+          // Year filter
+          const matchesYear = !year || article.year === year;
+          
+          // Source filter
+          const matchesSource = !source || article.source?.toLowerCase().includes(source.toLowerCase());
+          
+          return matchesSearch && matchesYear && matchesSource;
         });
       
       console.log('Filtered data:', data.length, 'records');
@@ -442,6 +542,9 @@ export default {
           return {
             id: row.id,
             ...jsonData,
+            // Also include snake_case versions for frontend compatibility
+            image_url: jsonData.imageUrl,
+            article_content: jsonData.articleContent,
             created_at: row.created_at,
             updated_at: row.updated_at
           };

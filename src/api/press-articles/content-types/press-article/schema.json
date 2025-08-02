@@ -22,6 +22,10 @@
       "type": "string", 
       "required": true 
     },
+    "image_url": { 
+      "type": "string", 
+      "required": false 
+    },
     "link": { 
       "type": "string", 
       "required": true 
@@ -43,6 +47,9 @@
       "targetField": "title" 
     },
     "articleContent": { 
+      "type": "richtext" 
+    },
+    "article_content": { 
       "type": "richtext" 
     }
   }
