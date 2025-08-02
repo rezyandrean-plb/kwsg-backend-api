@@ -534,7 +534,7 @@ export interface ApiPressArticlesPressArticle
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     date: Schema.Attribute.Date & Schema.Attribute.Required;
-    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    description: Schema.Attribute.Text;
     image_url: Schema.Attribute.String;
     imageUrl: Schema.Attribute.String & Schema.Attribute.Required;
     link: Schema.Attribute.String & Schema.Attribute.Required;

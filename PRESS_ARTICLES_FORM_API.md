@@ -9,7 +9,7 @@ The Press Articles API has been updated to handle the React form data structure 
 | React Form Field | API Internal Field | Description |
 |------------------|-------------------|-------------|
 | `title` | `title` | Article title (required) |
-| `description` | `description` | Article description (required) |
+| `description` | `description` | Article description (optional) |
 | `image_url` | `imageUrl` | Image URL (required) |
 | `link` | `link` | Article link (required) |
 | `date` | `date` | Publication date (required) |
@@ -217,12 +217,16 @@ const getArticle = async (id: number) => {
 
 The API validates the following required fields:
 - `title` - Must not be empty
-- `description` - Must not be empty
 - `image_url` - Must not be empty
 - `link` - Must not be empty
 - `date` - Must be a valid date
 - `year` - Must not be empty
 - `source` - Must not be empty
+
+Optional fields:
+- `description` - Can be empty or omitted
+- `slug` - Auto-generated if not provided
+- `article_content` - Can be empty or omitted
 
 ## Auto-Generated Fields
 

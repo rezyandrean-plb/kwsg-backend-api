@@ -15,8 +15,7 @@
       "required": true 
     },
     "description": { 
-      "type": "text", 
-      "required": true 
+      "type": "text"
     },
     "imageUrl": { 
       "type": "string", 

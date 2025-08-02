@@ -198,9 +198,6 @@ export default {
       if (!normalizedData.title) {
         return ctx.badRequest('Article title is required');
       }
-      if (!normalizedData.description) {
-        return ctx.badRequest('Article description is required');
-      }
       if (!normalizedData.imageUrl) {
         return ctx.badRequest('Article image URL is required');
       }
@@ -380,7 +377,7 @@ export default {
       
       // Validate each article
       for (const article of articlesData) {
-        if (!article.title || !article.description || !article.imageUrl || 
+        if (!article.title || !article.imageUrl || 
             !article.link || !article.date || !article.year || !article.source) {
           return ctx.badRequest('All required fields must be provided for each article');
         }

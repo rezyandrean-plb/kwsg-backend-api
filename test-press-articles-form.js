@@ -28,6 +28,26 @@ async function testPressArticlesAPI() {
 
     const articleId = createResponse.data.data.id;
 
+    // Test 1b: Create article without description (optional field)
+    console.log('\n1️⃣b Testing CREATE without description (optional field)...');
+    const articleWithoutDescription = {
+      title: 'Article Without Description',
+      image_url: 'https://example.com/image-no-desc.jpg',
+      link: 'https://example.com/article-no-desc',
+      date: '2024-01-15',
+      year: '2024',
+      source: 'Test Source',
+      article_content: '<p>This article has no description field.</p>'
+    };
+    
+    const createNoDescResponse = await axios.post(`${API_BASE_URL}/press-articles`, articleWithoutDescription);
+    console.log('✅ Create without description successful!');
+    console.log('Created article ID:', createNoDescResponse.data.data.id);
+    
+    // Clean up the test article without description
+    await axios.delete(`${API_BASE_URL}/press-articles/${createNoDescResponse.data.data.id}`);
+    console.log('✅ Cleaned up test article without description');
+
     // Test 2: Get the created article
     console.log('\n2️⃣ Testing GET by ID...');
     const getResponse = await axios.get(`${API_BASE_URL}/press-articles/${articleId}`);
