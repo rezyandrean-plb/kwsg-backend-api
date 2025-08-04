@@ -613,6 +613,7 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     developer: Schema.Attribute.String;
     district: Schema.Attribute.String;
     features: Schema.Attribute.JSON;
+    image_url_banner: Schema.Attribute.String;
     latitude: Schema.Attribute.Decimal;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<

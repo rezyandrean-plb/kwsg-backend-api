@@ -36,6 +36,7 @@
     "total_floors": { "type": "string" },
     "site_area": { "type": "string" },
     "latitude": { "type": "decimal" },
-    "longitude": { "type": "decimal" }
+    "longitude": { "type": "decimal" },
+    "image_url_banner": { "type": "string" }
   }
 }
