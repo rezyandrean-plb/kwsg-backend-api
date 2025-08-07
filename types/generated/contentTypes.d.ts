@@ -400,7 +400,6 @@ export interface ApiBrochuresBrochure extends Struct.CollectionTypeSchema {
       'api::brochures.brochure'
     > &
       Schema.Attribute.Private;
-    project_name: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -504,7 +503,6 @@ export interface ApiFloorPlansFloorPlan extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     price: Schema.Attribute.String;
-    project_id: Schema.Attribute.Integer;
     project_name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     size_sqft: Schema.Attribute.Decimal;
@@ -639,7 +637,46 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     total_floors: Schema.Attribute.String;
     total_units: Schema.Attribute.String;
     type: Schema.Attribute.String;
+    unit_pricing: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::unit-pricing.unit-pricing'
+    >;
     units: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSitePlansSitePlan extends Struct.CollectionTypeSchema {
+  collectionName: 'site_plans';
+  info: {
+    displayName: 'Site Plans';
+    pluralName: 'site-plans';
+    singularName: 'site-plan';
+  };
+  options: {
+    comment: 'Site plans for projects';
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    image_url: Schema.Attribute.String;
+    is_primary: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    layout_info: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::site-plans.site-plan'
+    > &
+      Schema.Attribute.Private;
+    project_name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    site_plan_id: Schema.Attribute.String;
+    site_plan_name: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1162,6 +1199,7 @@ declare module '@strapi/strapi' {
       'api::press-articles.press-article': ApiPressArticlesPressArticle;
       'api::project-images.project-image': ApiProjectImagesProjectImage;
       'api::projects.project': ApiProjectsProject;
+      'api::site-plans.site-plan': ApiSitePlansSitePlan;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

@@ -10,7 +10,6 @@
     "comment": "Brochures linked to projects by project name"
   },
   "attributes": {
-    "project_name": { "type": "string", "required": true },
     "brochure_url": { "type": "string", "required": true },
     "brochure_title": { "type": "string" },
     "description": { "type": "text" },

@@ -41,85 +41,133 @@ export default {
         return ctx.notFound('Project not found');
       }
 
-      // Get related data using raw SQL queries for better performance
-      
-      // Get project images
-      const images = await knex('project_images')
-        .where('project_id', id)
-        .orderBy('display_order', 'asc')
-        .select('*');
-
-      // Get project facilities through junction table
-      const facilities = await knex('project_facilities')
-        .join('facilities', 'project_facilities.facility_id', 'facilities.id')
-        .where('project_facilities.project_id', id)
-        .select('facilities.*');
-
-      // Get project features through junction table
-      const features = await knex('project_features')
-        .join('features', 'project_features.feature_id', 'features.id')
-        .where('project_features.project_id', id)
-        .select('features.*');
-
-      // Get developer information
-      const developer = await knex('developers')
-        .where('name', project.developer)
-        .first();
-
-      // Get nearby amenities (if any)
-      const nearbyAmenities = await knex('nearby_amenities')
-        .where('project_id', id)
-        .select('*');
-
-      // Get similar projects (if any)
-      const similarProjects = await knex('similar_projects')
-        .where('project_id', id)
-        .select('id', 'name', 'location', 'price', 'developer', 'completion', 'image_url');
-
-      // Get floor plans (if any) - check both project_id and project_name
+      // Initialize related data objects
+      let images = [];
+      let facilities = [];
+      let features = [];
+      let developer = null;
+      let nearbyAmenities = [];
+      let similarProjects = [];
       let floorPlans = [];
-      
-      // First try to get by project_id
-      floorPlans = await knex('floor_plans')
-        .where('project_id', id)
-        .select('*');
-      
-      // If no floor plans found by project_id, try by project name
-      if (floorPlans.length === 0) {
+      let unitAvailability = [];
+      let unitTypes = [];
+      let brochures = [];
+
+      try {
+        // Get project images (if table exists)
+        images = await knex('project_images')
+          .where('project_id', id)
+          .orderBy('display_order', 'asc')
+          .select('*');
+      } catch (err) {
+        console.log('project_images table not accessible:', err.message);
+      }
+
+      try {
+        // Get project facilities through junction table (if tables exist)
+        facilities = await knex('project_facilities')
+          .join('facilities', 'project_facilities.facility_id', 'facilities.id')
+          .where('project_facilities.project_id', id)
+          .select('facilities.*');
+      } catch (err) {
+        console.log('facilities tables not accessible:', err.message);
+      }
+
+      try {
+        // Get project features through junction table (if tables exist)
+        features = await knex('project_features')
+          .join('features', 'project_features.feature_id', 'features.id')
+          .where('project_features.project_id', id)
+          .select('features.*');
+      } catch (err) {
+        console.log('features tables not accessible:', err.message);
+      }
+
+      try {
+        // Get developer information (if table exists)
+        developer = await knex('developers')
+          .where('name', project.developer)
+          .first();
+      } catch (err) {
+        console.log('developers table not accessible:', err.message);
+      }
+
+      try {
+        // Get nearby amenities (if table exists)
+        nearbyAmenities = await knex('nearby_amenities')
+          .where('project_id', id)
+          .select('*');
+      } catch (err) {
+        console.log('nearby_amenities table not accessible:', err.message);
+      }
+
+      try {
+        // Get similar projects (if table exists)
+        similarProjects = await knex('similar_projects')
+          .where('project_id', id)
+          .select('id', 'name', 'location', 'price', 'developer', 'completion', 'image_url');
+      } catch (err) {
+        console.log('similar_projects table not accessible:', err.message);
+      }
+
+      try {
+        // Get floor plans (if table exists) - check both project_id and project_name
+        // First try to get by project_id
         floorPlans = await knex('floor_plans')
+          .where('project_id', id)
+          .select('*');
+        
+        // If no floor plans found by project_id, try by project name
+        if (floorPlans.length === 0) {
+          floorPlans = await knex('floor_plans')
+            .where('project_name', project.name)
+            .select('*');
+        }
+        
+        // If still no floor plans, try by project_name field
+        if (floorPlans.length === 0) {
+          floorPlans = await knex('floor_plans')
+            .where('project_name', project.project_name)
+            .select('*');
+        }
+        
+        // Transform floor plans to include img field
+        floorPlans = floorPlans.map(plan => ({
+          ...plan,
+          img: plan.img || plan.image_url || null // Use img field, fallback to image_url
+        }));
+      } catch (err) {
+        console.log('floor_plans table not accessible:', err.message);
+      }
+
+      try {
+        // Get unit availability (if table exists)
+        unitAvailability = await knex('unit_availability')
+          .where('project_id', id)
+          .select('*');
+      } catch (err) {
+        console.log('unit_availability table not accessible:', err.message);
+      }
+
+      try {
+        // Get unit types (if table exists)
+        unitTypes = await knex('unit_types')
+          .where('project_id', id)
+          .select('*');
+      } catch (err) {
+        console.log('unit_types table not accessible:', err.message);
+      }
+
+      try {
+        // Get brochures for this project (if table exists)
+        brochures = await knex('brochures')
           .where('project_name', project.name)
+          .where('is_active', true)
+          .orderBy('created_at', 'desc')
           .select('*');
+      } catch (err) {
+        console.log('brochures table not accessible:', err.message);
       }
-      
-      // If still no floor plans, try by project_name field
-      if (floorPlans.length === 0) {
-        floorPlans = await knex('floor_plans')
-          .where('project_name', project.project_name)
-          .select('*');
-      }
-      
-      // Transform floor plans to include img field
-      floorPlans = floorPlans.map(plan => ({
-        ...plan,
-        img: plan.img || plan.image_url || null // Use img field, fallback to image_url
-      }));
-
-      // Get unit availability (if any)
-      const unitAvailability = await knex('unit_availability')
-        .where('project_id', id)
-        .select('*');
-
-      // Get unit types (if any)
-      const unitTypes = await knex('unit_types')
-        .where('project_id', id)
-        .select('*');
-
-      // Get brochures for this project (if any)
-      const brochures = await knex('brochures')
-        .where('project_name', project.name)
-        .where('is_active', true)
-        .orderBy('created_at', 'desc')
-        .select('*');
 
       // Combine all data
       const detailedProject = {
@@ -138,6 +186,7 @@ export default {
       
       return { data: detailedProject };
     } catch (err) {
+      console.error('Error in findOne method:', err);
       ctx.throw(500, err);
     }
   },
@@ -280,6 +329,46 @@ export default {
       
       return { data };
     } catch (err) {
+      ctx.throw(500, err);
+    }
+  },
+
+  // Search projects by various criteria
+  async search(ctx) {
+    try {
+      const { name, developer, location, type, status } = ctx.query;
+      const knex = strapi.db.connection;
+      
+      let query = knex('projects');
+      
+      // Add search conditions based on provided parameters
+      if (name) {
+        query = query.where('name', 'like', `%${name}%`);
+      }
+      
+      if (developer) {
+        query = query.where('developer', 'like', `%${developer}%`);
+      }
+      
+      if (location) {
+        query = query.where('location', 'like', `%${location}%`);
+      }
+      
+      if (type) {
+        query = query.where('type', 'like', `%${type}%`);
+      }
+      
+      if (status) {
+        query = query.where('status', 'like', `%${status}%`);
+      }
+      
+      const data = await query
+        .select('*')
+        .orderBy('created_at', 'desc');
+      
+      return { data };
+    } catch (err) {
+      console.error('Error in search method:', err);
       ctx.throw(500, err);
     }
   },

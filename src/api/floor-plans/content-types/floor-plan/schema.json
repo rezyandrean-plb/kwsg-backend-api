@@ -10,7 +10,6 @@
     "comment": "Floor plans for property units"
   },
   "attributes": {
-    "project_id": { "type": "integer" },
     "project_name": { "type": "string" },
     "floor_plan_id": { "type": "string" },
     "floor_plan_type": { "type": "string" },

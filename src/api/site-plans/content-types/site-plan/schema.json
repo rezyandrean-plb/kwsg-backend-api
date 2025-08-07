@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "site_plans",
+  "info": {
+    "singularName": "site-plan",
+    "pluralName": "site-plans",
+    "displayName": "Site Plans"
+  },
+  "options": {
+    "comment": "Site plans for projects"
+  },
+  "attributes": {
+    "project_name": {
+      "type": "string"
+    },
+    "site_plan_id": {
+      "type": "string"
+    },
+    "site_plan_name": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "layout_info": {
+      "type": "json"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

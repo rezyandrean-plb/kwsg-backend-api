@@ -37,6 +37,12 @@
     "site_area": { "type": "string" },
     "latitude": { "type": "decimal" },
     "longitude": { "type": "decimal" },
-    "image_url_banner": { "type": "string" }
+    "image_url_banner": { "type": "string" },
+    "unit_pricing": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::unit-pricing.unit-pricing",
+      "mappedBy": "project"
+    }
   }
 }
