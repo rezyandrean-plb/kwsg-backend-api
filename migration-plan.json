@@ -1,0 +1,1618 @@
+{
+  "projects": {
+    "missingColumns": [
+      "document_id",
+      "published_at",
+      "created_by_id",
+      "updated_by_id",
+      "locale"
+    ],
+    "extraColumns": [],
+    "dataTypeDifferences": [
+      {
+        "column": "type",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "price",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "price_from",
+        "source": "character varying(255)",
+        "target": "character varying(50)"
+      },
+      {
+        "column": "price_per_sqft",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "bedrooms",
+        "source": "character varying(255)",
+        "target": "character varying(50)"
+      },
+      {
+        "column": "bathrooms",
+        "source": "character varying(255)",
+        "target": "character varying(50)"
+      },
+      {
+        "column": "size",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "units",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "completion",
+        "source": "character varying(255)",
+        "target": "character varying(10)"
+      },
+      {
+        "column": "features",
+        "source": "jsonb",
+        "target": "ARRAY"
+      },
+      {
+        "column": "district",
+        "source": "character varying(255)",
+        "target": "character varying(10)"
+      },
+      {
+        "column": "tenure",
+        "source": "character varying(255)",
+        "target": "USER-DEFINED"
+      },
+      {
+        "column": "property_type",
+        "source": "character varying(255)",
+        "target": "USER-DEFINED"
+      },
+      {
+        "column": "status",
+        "source": "character varying(255)",
+        "target": "USER-DEFINED"
+      },
+      {
+        "column": "total_units",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "total_floors",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "site_area",
+        "source": "character varying(255)",
+        "target": "character varying(100)"
+      },
+      {
+        "column": "created_at",
+        "source": "timestamp without time zone",
+        "target": "timestamp with time zone"
+      },
+      {
+        "column": "updated_at",
+        "source": "timestamp without time zone",
+        "target": "timestamp with time zone"
+      }
+    ],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('project_id_seq'::regclass)"
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "slug",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "title",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "location",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "address",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price_from",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price_per_sqft",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bedrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bathrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "size",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "units",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "developer",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "completion",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "features",
+        "data_type": "jsonb",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "district",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "tenure",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "property_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "status",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "total_units",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "total_floors",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_area",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "image_url_banner",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "latitude",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "longitude",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('projects_id_seq'::regclass)"
+      },
+      {
+        "column_name": "name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "slug",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "title",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "location",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "address",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "type",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price_from",
+        "data_type": "character varying",
+        "character_maximum_length": 50,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price_per_sqft",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bedrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 50,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bathrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 50,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "size",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "units",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "developer",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "completion",
+        "data_type": "character varying",
+        "character_maximum_length": 10,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "features",
+        "data_type": "ARRAY",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "district",
+        "data_type": "character varying",
+        "character_maximum_length": 10,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "tenure",
+        "data_type": "USER-DEFINED",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "property_type",
+        "data_type": "USER-DEFINED",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "total_units",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "total_floors",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_area",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "CURRENT_TIMESTAMP"
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "CURRENT_TIMESTAMP"
+      },
+      {
+        "column_name": "image_url_banner",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "latitude",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "longitude",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ]
+  },
+  "floor_plans": {
+    "missingColumns": [
+      "project_id"
+    ],
+    "extraColumns": [
+      "type",
+      "image_url",
+      "display_order"
+    ],
+    "dataTypeDifferences": [
+      {
+        "column": "project_name",
+        "source": "character varying",
+        "target": "character varying(255)"
+      },
+      {
+        "column": "floor_plan_id",
+        "source": "character varying",
+        "target": "character varying(255)"
+      },
+      {
+        "column": "floor_plan_type",
+        "source": "character varying",
+        "target": "character varying(255)"
+      },
+      {
+        "column": "floor_plan_name",
+        "source": "character varying",
+        "target": "character varying(255)"
+      },
+      {
+        "column": "img",
+        "source": "character varying",
+        "target": "character varying(255)"
+      }
+    ],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('floor_plans_id_seq'::regclass)"
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "unit_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bedrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bathrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "size_sqft",
+        "data_type": "numeric",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_image",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_available",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_id",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_type",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_name",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "img",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('floor_plans_id_seq'::regclass)"
+      },
+      {
+        "column_name": "type",
+        "data_type": "character varying",
+        "character_maximum_length": 100,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "image_url",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "display_order",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "0"
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "unit_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bedrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "bathrooms",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "size_sqft",
+        "data_type": "numeric",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "price",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_image",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_available",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "floor_plan_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "img",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ]
+  },
+  "brochures": {
+    "missingColumns": [
+      "project_name"
+    ],
+    "extraColumns": [],
+    "dataTypeDifferences": [
+      {
+        "column": "brochure_title",
+        "source": "character varying",
+        "target": "character varying(255)"
+      }
+    ],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('brochures_id_seq'::regclass)"
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "brochure_url",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "brochure_title",
+        "data_type": "character varying",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "file_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "file_size",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('brochures_id_seq'::regclass)"
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "brochure_url",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "brochure_title",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "file_type",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "file_size",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ]
+  },
+  "site_plans": {
+    "missingColumns": [
+      "project_id"
+    ],
+    "extraColumns": [
+      "document_id",
+      "published_at",
+      "created_by_id",
+      "updated_by_id",
+      "locale"
+    ],
+    "dataTypeDifferences": [
+      {
+        "column": "layout_info",
+        "source": "json",
+        "target": "jsonb"
+      },
+      {
+        "column": "created_at",
+        "source": "timestamp with time zone",
+        "target": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "source": "timestamp with time zone",
+        "target": "timestamp without time zone"
+      }
+    ],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('site_plans_id_seq'::regclass)"
+      },
+      {
+        "column_name": "project_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_plan_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_plan_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "image_url",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "layout_info",
+        "data_type": "json",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_primary",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "false"
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "CURRENT_TIMESTAMP"
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('site_plans_id_seq'::regclass)"
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "project_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_plan_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "site_plan_name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "image_url",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "layout_info",
+        "data_type": "jsonb",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "is_primary",
+        "data_type": "boolean",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ]
+  },
+  "facilities": {
+    "missingColumns": [],
+    "extraColumns": [],
+    "dataTypeDifferences": [],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('facilities_id_seq'::regclass)"
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "icon",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('facilities_id_seq'::regclass)"
+      },
+      {
+        "column_name": "name",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "document_id",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "icon",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "updated_by_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "locale",
+        "data_type": "character varying",
+        "character_maximum_length": 255,
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ]
+  },
+  "project_facilities": {
+    "missingColumns": [
+      "id"
+    ],
+    "extraColumns": [
+      "updated_at"
+    ],
+    "dataTypeDifferences": [
+      {
+        "column": "created_at",
+        "source": "timestamp without time zone",
+        "target": "timestamp with time zone"
+      }
+    ],
+    "sourceColumns": [
+      {
+        "column_name": "id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": "nextval('project_facilities_id_seq'::regclass)"
+      },
+      {
+        "column_name": "project_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "facility_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "now()"
+      }
+    ],
+    "targetColumns": [
+      {
+        "column_name": "project_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "facility_id",
+        "data_type": "integer",
+        "character_maximum_length": null,
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "CURRENT_TIMESTAMP"
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "character_maximum_length": null,
+        "is_nullable": "YES",
+        "column_default": "CURRENT_TIMESTAMP"
+      }
+    ]
+  }
+}

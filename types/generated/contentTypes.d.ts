@@ -612,7 +612,7 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     district: Schema.Attribute.String;
     features: Schema.Attribute.JSON;
     image_url_banner: Schema.Attribute.String;
-    latitude: Schema.Attribute.Decimal;
+    latitude: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -620,7 +620,7 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     location: Schema.Attribute.String;
-    longitude: Schema.Attribute.Decimal;
+    longitude: Schema.Attribute.String;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     price: Schema.Attribute.String;
     price_from: Schema.Attribute.String;

@@ -35,8 +35,8 @@
     "total_units": { "type": "string" },
     "total_floors": { "type": "string" },
     "site_area": { "type": "string" },
-    "latitude": { "type": "decimal" },
-    "longitude": { "type": "decimal" },
+    "latitude": { "type": "string" },
+    "longitude": { "type": "string" },
     "image_url_banner": { "type": "string" },
     "unit_pricing": {
       "type": "relation",

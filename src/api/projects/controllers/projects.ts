@@ -30,6 +30,17 @@ export default {
   async findOne(ctx) {
     try {
       const { id } = ctx.params;
+      
+      // Validate ID parameter
+      if (!id) {
+        return ctx.badRequest('Project ID is required');
+      }
+      
+      // Check if ID is numeric
+      if (isNaN(parseInt(id))) {
+        return ctx.notFound('Invalid project ID format');
+      }
+      
       const knex = strapi.db.connection;
       
       // Get the main project data from projects table
@@ -68,9 +79,11 @@ export default {
         facilities = await knex('project_facilities')
           .join('facilities', 'project_facilities.facility_id', 'facilities.id')
           .where('project_facilities.project_id', id)
-          .select('facilities.*');
+          .select('facilities.id', 'facilities.name', 'facilities.description', 'facilities.icon')
+          .orderBy('facilities.name', 'asc');
       } catch (err) {
         console.log('facilities tables not accessible:', err.message);
+        facilities = [];
       }
 
       try {
@@ -111,30 +124,23 @@ export default {
       }
 
       try {
-        // Get floor plans (if table exists) - check both project_id and project_name
-        // First try to get by project_id
+        // Get floor plans (if table exists) - floor_plans table uses project_name, not project_id
         floorPlans = await knex('floor_plans')
-          .where('project_id', id)
+          .where('project_name', project.name)
           .select('*');
         
-        // If no floor plans found by project_id, try by project name
-        if (floorPlans.length === 0) {
-          floorPlans = await knex('floor_plans')
-            .where('project_name', project.name)
-            .select('*');
-        }
-        
-        // If still no floor plans, try by project_name field
+        // If no floor plans found by project.name, try by project.project_name
         if (floorPlans.length === 0) {
           floorPlans = await knex('floor_plans')
             .where('project_name', project.project_name)
             .select('*');
         }
         
-        // Transform floor plans to include img field
+        // Transform floor plans to include proper image URL field
         floorPlans = floorPlans.map(plan => ({
           ...plan,
-          img: plan.img || plan.image_url || null // Use img field, fallback to image_url
+          image_url: plan.img || plan.floor_plan_image || plan.image_url || null, // Primary image URL field
+          img: plan.img || plan.floor_plan_image || plan.image_url || null // Keep img field for backward compatibility
         }));
       } catch (err) {
         console.log('floor_plans table not accessible:', err.message);
@@ -159,14 +165,50 @@ export default {
       }
 
       try {
-        // Get brochures for this project (if table exists)
+        // Get brochures for this project (if table exists) - brochures are linked by project name in brochure_title
         brochures = await knex('brochures')
-          .where('project_name', project.name)
+          .where('brochure_title', 'like', `%${project.name}%`)
           .where('is_active', true)
           .orderBy('created_at', 'desc')
           .select('*');
+        
+        // Transform brochures to include proper URL field
+        brochures = brochures.map(brochure => ({
+          ...brochure,
+          file_url: brochure.brochure_url || null, // Primary file URL field
+          brochure_url: brochure.brochure_url || null // Keep original field for backward compatibility
+        }));
       } catch (err) {
         console.log('brochures table not accessible:', err.message);
+      }
+
+      // Get site plans and unit pricing
+      let sitePlans = [];
+      let unitPricing = [];
+
+      try {
+        // Get site plans for this project (if table exists)
+        sitePlans = await knex('site_plans')
+          .where('project_id', id)
+          .select('*');
+        
+        // If no site plans found by project_id, try by project name
+        if (sitePlans.length === 0) {
+          sitePlans = await knex('site_plans')
+            .where('project_name', project.name)
+            .select('*');
+        }
+      } catch (err) {
+        console.log('site_plans table not accessible:', err.message);
+      }
+
+      try {
+        // Get unit pricing for this project (if table exists)
+        unitPricing = await knex('unit_pricing')
+          .where('project_id', id)
+          .select('*');
+      } catch (err) {
+        console.log('unit_pricing table not accessible:', err.message);
       }
 
       // Combine all data
@@ -182,6 +224,8 @@ export default {
         unitAvailability,
         unitTypes,
         brochures,
+        sitePlans,
+        unitPricing,
       };
       
       return { data: detailedProject };
@@ -298,6 +342,12 @@ export default {
   async findByLocation(ctx) {
     try {
       const { location } = ctx.params;
+      
+      // Validate location parameter
+      if (!location) {
+        return ctx.badRequest('Location parameter is required');
+      }
+      
       const knex = strapi.db.connection;
       
       const data = await knex('projects as p')
