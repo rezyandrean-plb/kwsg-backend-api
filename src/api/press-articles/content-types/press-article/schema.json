@@ -17,10 +17,6 @@
     "description": { 
       "type": "text"
     },
-    "imageUrl": { 
-      "type": "string", 
-      "required": true 
-    },
     "image_url": { 
       "type": "string", 
       "required": false 
@@ -44,9 +40,6 @@
     "slug": { 
       "type": "uid", 
       "targetField": "title" 
-    },
-    "articleContent": { 
-      "type": "richtext" 
     },
     "article_content": { 
       "type": "richtext" 
