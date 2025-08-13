@@ -13,11 +13,63 @@ export default {
       console.log('Database connection obtained');
       
       // Get actual projects data
-      const data = await knex('projects')
+      const projects = await knex('projects')
         .select('*')
         .orderBy('created_at', 'desc');
       
-      console.log('Projects count:', data.length);
+      console.log('Projects count:', projects.length);
+      
+      // Enhance projects with developer information
+      const data = await Promise.all(projects.map(async (project) => {
+        let developer = null;
+        
+        try {
+          if (project.developer) {
+            // First try exact match
+            developer = await knex('developers')
+              .where('name', project.developer)
+              .first();
+            
+            // If no exact match, try partial match
+            if (!developer) {
+              developer = await knex('developers')
+                .where('name', 'like', `%${project.developer}%`)
+                .orWhere('name', 'like', `%${project.developer.split(' ')[0]}%`)
+                .first();
+            }
+            
+            // If still no match, create a basic developer object with the name
+            if (!developer) {
+              developer = {
+                name: project.developer,
+                description: null,
+                logo_url: null,
+                website: null,
+                contact_email: null,
+                contact_phone: null
+              };
+            }
+          }
+        } catch (err) {
+          console.log('developers table not accessible:', err.message);
+          // If table is not accessible, still provide developer name if available
+          if (project.developer) {
+            developer = {
+              name: project.developer,
+              description: null,
+              logo_url: null,
+              website: null,
+              contact_email: null,
+              contact_phone: null
+            };
+          }
+        }
+        
+        return {
+          ...project,
+          developer
+        };
+      }));
       
       return { data };
     } catch (err) {
@@ -98,11 +150,45 @@ export default {
 
       try {
         // Get developer information (if table exists)
-        developer = await knex('developers')
-          .where('name', project.developer)
-          .first();
+        if (project.developer) {
+          // First try exact match
+          developer = await knex('developers')
+            .where('name', project.developer)
+            .first();
+          
+          // If no exact match, try partial match
+          if (!developer) {
+            developer = await knex('developers')
+              .where('name', 'like', `%${project.developer}%`)
+              .orWhere('name', 'like', `%${project.developer.split(' ')[0]}%`)
+              .first();
+          }
+          
+          // If still no match, create a basic developer object with the name
+          if (!developer) {
+            developer = {
+              name: project.developer,
+              description: null,
+              logo_url: null,
+              website: null,
+              contact_email: null,
+              contact_phone: null
+            };
+          }
+        }
       } catch (err) {
         console.log('developers table not accessible:', err.message);
+        // If table is not accessible, still provide developer name if available
+        if (project.developer) {
+          developer = {
+            name: project.developer,
+            description: null,
+            logo_url: null,
+            website: null,
+            contact_email: null,
+            contact_phone: null
+          };
+        }
       }
 
       try {
