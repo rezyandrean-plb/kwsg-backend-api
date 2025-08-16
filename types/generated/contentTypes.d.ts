@@ -513,6 +513,45 @@ export interface ApiFloorPlansFloorPlan extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiImageGalleryImageGallery
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'image_galleries';
+  info: {
+    displayName: 'Image Gallery';
+    pluralName: 'image-galleries';
+    singularName: 'image-gallery';
+  };
+  options: {
+    comment: 'Image gallery for projects with multiple images';
+    draftAndPublish: false;
+  };
+  attributes: {
+    alt_text: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    display_order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    image_category: Schema.Attribute.String;
+    image_description: Schema.Attribute.Text;
+    image_size: Schema.Attribute.String;
+    image_title: Schema.Attribute.String & Schema.Attribute.Required;
+    image_url: Schema.Attribute.String & Schema.Attribute.Required;
+    is_active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    is_featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::image-gallery.image-gallery'
+    > &
+      Schema.Attribute.Private;
+    project_name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiPressArticlesPressArticle
   extends Struct.CollectionTypeSchema {
   collectionName: 'press_articles';
@@ -1194,6 +1233,7 @@ declare module '@strapi/strapi' {
       'api::developers.developer': ApiDevelopersDeveloper;
       'api::facilities.facility': ApiFacilitiesFacility;
       'api::floor-plans.floor-plan': ApiFloorPlansFloorPlan;
+      'api::image-gallery.image-gallery': ApiImageGalleryImageGallery;
       'api::press-articles.press-article': ApiPressArticlesPressArticle;
       'api::project-images.project-image': ApiProjectImagesProjectImage;
       'api::projects.project': ApiProjectsProject;

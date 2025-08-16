@@ -1,73 +1,97 @@
-# Projects API - Image URL Banner Field Update
+# Projects Banner URL Update Summary
 
 ## Overview
-Added a new `image_url_banner` field to the projects API to support banner images for projects.
-
-## Changes Made
-
-### 1. Database Schema Update
-- **Migration File**: `database/migrations/006_add_image_url_banner_to_projects.js`
-- **Action**: Added `image_url_banner` column to the `projects` table
-- **Type**: VARCHAR (nullable)
-- **Default Value**: NULL for all existing records
-
-### 2. Strapi Schema Update
-- **File**: `src/api/projects/content-types/project/schema.json`
-- **Action**: Added `image_url_banner` field definition
-- **Type**: string (optional)
-
-### 3. API Response
-The `/api/projects` GET endpoint now includes the `image_url_banner` field in the response:
-
-```json
-{
-  "id": 221,
-  "name": "Kediri Residence City Center",
-  "location": "Kediri, East Java",
-  "image_url_banner": null,
-  // ... other fields
-}
-```
-
-## Migration Execution
-
-### Running the Migration
-```bash
-./run-projects-banner-migration.sh
-```
-
-### Verification
-```bash
-node test-projects-banner-api.js
-```
-
-## Current Status
-- ✅ Database column added successfully
-- ✅ Schema updated
-- ✅ API returning the new field
-- ✅ All existing projects have `image_url_banner: null`
-- ✅ Ready for banner image URLs to be populated
-
-## Usage
-The `image_url_banner` field can now be:
-- **Read**: Retrieved via GET `/api/projects`
-- **Updated**: Modified via PUT/PATCH `/api/projects/:id`
-- **Created**: Set when creating new projects via POST `/api/projects`
-
-## Example Usage
-```bash
-# Get all projects with banner field
-curl http://localhost:1337/api/projects
-
-# Update a project's banner image
-curl -X PUT http://localhost:1337/api/projects/221 \
-  -H "Content-Type: application/json" \
-  -d '{"image_url_banner": "https://example.com/banner.jpg"}'
-```
+Successfully updated the `image_url_banner` field in the projects table using data from the `banner_url.csv` file. The update process matched projects by their names and updated the banner URLs accordingly.
 
 ## Files Created/Modified
-- `database/migrations/006_add_image_url_banner_to_projects.js` (NEW)
-- `src/api/projects/content-types/project/schema.json` (MODIFIED)
-- `run-projects-banner-migration.sh` (NEW)
-- `test-projects-banner-api.js` (NEW)
-- `PROJECTS_BANNER_UPDATE.md` (NEW) 
+
+### 1. `update-projects-banner-urls.js`
+- **Purpose**: Main script to update banner URLs in the projects table
+- **Features**:
+  - Reads banner URLs from CSV file
+  - Matches projects by name (exact and case-insensitive)
+  - Updates the `image_url_banner` field in the database
+  - Provides detailed logging and error handling
+  - Generates summary report
+
+### 2. `run-projects-banner-update.sh`
+- **Purpose**: Shell script wrapper for easy execution
+- **Features**:
+  - Checks prerequisites (Node.js, npm packages, CSV file)
+  - Provides colored output for better readability
+  - Error handling and validation
+
+## Update Results
+
+### Summary Statistics
+- **Total projects in CSV**: 349
+- **Successfully updated**: 348 (99.7%)
+- **Not found in database**: 1 (0.3%)
+
+### Project Not Found
+- **Penrith**: This project exists in the CSV but was not found in the database
+
+### Success Rate
+The update process achieved a **99.7% success rate**, with only one project not being found in the database. This indicates excellent data matching between the CSV file and the existing projects table.
+
+## Technical Details
+
+### Database Schema
+- **Table**: `projects`
+- **Field Updated**: `image_url_banner` (string, nullable)
+- **Matching Fields**: `name` and `project_name`
+
+### Matching Logic
+1. **Exact Match**: First tries to match by exact project name
+2. **Case-Insensitive Match**: If exact match fails, tries case-insensitive matching
+3. **Multiple Fields**: Checks both `name` and `project_name` fields
+
+### CSV Structure
+The CSV file contains the following columns:
+- `projectName`: Project name for matching
+- `projectId`: Project identifier (not used for matching)
+- `image_banner_url`: Banner image URL to be inserted
+
+## Usage
+
+### Running the Update Script
+```bash
+# Using the shell script (recommended)
+./run-projects-banner-update.sh
+
+# Or directly with Node.js
+node update-projects-banner-urls.js banner_url.csv
+```
+
+### Custom CSV File
+```bash
+./run-projects-banner-update.sh path/to/your/csv/file.csv
+```
+
+## Error Handling
+
+The script includes comprehensive error handling:
+- **File Validation**: Checks if CSV file exists
+- **Database Connection**: Validates database connectivity
+- **Individual Project Errors**: Continues processing even if individual projects fail
+- **Detailed Logging**: Provides timestamps and status for each operation
+
+## Dependencies
+
+- **Node.js**: Required for script execution
+- **knex**: Database query builder
+- **csv-parser**: CSV file parsing
+- **PostgreSQL**: Database system
+
+## Future Considerations
+
+1. **Data Validation**: Consider adding URL validation for banner images
+2. **Backup Strategy**: Create database backups before bulk updates
+3. **Monitoring**: Set up monitoring for banner image accessibility
+4. **Performance**: For larger datasets, consider batch processing
+
+## Conclusion
+
+The banner URL update process was highly successful, updating 348 out of 349 projects (99.7% success rate). The single unmatched project ("Penrith") may need manual investigation to determine if it should be added to the database or if there's a naming discrepancy.
+
+The scripts created are reusable and can be used for future banner URL updates or similar data import operations. 

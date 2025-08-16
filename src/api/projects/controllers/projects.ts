@@ -115,6 +115,7 @@ export default {
       let unitAvailability = [];
       let unitTypes = [];
       let brochures = [];
+      let imageGallery = [];
 
       try {
         // Get project images (if table exists)
@@ -268,6 +269,28 @@ export default {
         console.log('brochures table not accessible:', err.message);
       }
 
+      try {
+        // Get image gallery for this project (if table exists) - image_galleries are linked by project_name
+        imageGallery = await knex('image_galleries')
+          .where('project_name', project.name)
+          .where('is_active', true)
+          .orderBy('display_order', 'asc')
+          .orderBy('created_at', 'desc')
+          .select('*');
+        
+        // If no image gallery found by project.name, try by project.project_name
+        if (imageGallery.length === 0) {
+          imageGallery = await knex('image_galleries')
+            .where('project_name', project.project_name)
+            .where('is_active', true)
+            .orderBy('display_order', 'asc')
+            .orderBy('created_at', 'desc')
+            .select('*');
+        }
+      } catch (err) {
+        console.log('image_galleries table not accessible:', err.message);
+      }
+
       // Get site plans and unit pricing
       let sitePlans = [];
       let unitPricing = [];
@@ -310,6 +333,7 @@ export default {
         unitAvailability,
         unitTypes,
         brochures,
+        imageGallery,
         sitePlans,
         unitPricing,
       };

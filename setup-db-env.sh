@@ -8,7 +8,7 @@ echo "🔧 Setting up database environment variables for live database..."
 # Live Database Configuration
 export DATABASE_HOST=kw-1.cspkrkicfu7p.ap-southeast-1.rds.amazonaws.com
 export DATABASE_PORT=5432
-export DATABASE_NAME=kwsg
+export DATABASE_NAME=postgres
 export DATABASE_USERNAME=postgres
 export DATABASE_PASSWORD=kwpostgres
 export DATABASE_SSL=true

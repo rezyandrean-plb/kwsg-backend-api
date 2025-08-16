@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "image_galleries",
+  "info": {
+    "singularName": "image-gallery",
+    "pluralName": "image-galleries",
+    "displayName": "Image Gallery"
+  },
+  "options": {
+    "comment": "Image gallery for projects with multiple images"
+  },
+  "attributes": {
+    "project_name": { 
+      "type": "string", 
+      "required": true,
+      "comment": "References the project name for relation"
+    },
+    "image_title": { 
+      "type": "string",
+      "required": true 
+    },
+    "image_url": { 
+      "type": "string", 
+      "required": true 
+    },
+    "image_description": { 
+      "type": "text" 
+    },
+    "image_category": { 
+      "type": "string",
+      "comment": "Category of the image (e.g., exterior, interior, amenities, etc.)"
+    },
+    "display_order": { 
+      "type": "integer", 
+      "default": 0,
+      "comment": "Order for displaying images"
+    },
+    "is_featured": { 
+      "type": "boolean", 
+      "default": false,
+      "comment": "Whether this image should be featured"
+    },
+    "alt_text": { 
+      "type": "string",
+      "comment": "Alt text for accessibility"
+    },
+    "image_size": { 
+      "type": "string",
+      "comment": "Size information of the image"
+    },
+    "is_active": { 
+      "type": "boolean", 
+      "default": true,
+      "comment": "Whether this image is active and should be displayed"
+    }
+  }
+}
