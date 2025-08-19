@@ -260,31 +260,36 @@ export default {
     }
   },
 
-  // Get a single project by ID with detailed related data
+  // Get a single project by ID or slug with detailed related data
   async findOne(ctx) {
     try {
       const { id } = ctx.params;
       
-      // Validate ID parameter
+      // Validate parameter
       if (!id) {
         return ctx.badRequest('Project ID is required');
       }
       
-      // Check if ID is numeric
-      if (isNaN(parseInt(id))) {
-        return ctx.notFound('Invalid project ID format');
-      }
-      
       const knex = strapi.db.connection;
       
-      // Get the main project data from projects table
-      const project = await knex('projects')
-        .where('id', id)
-        .first();
+      // Determine whether param is numeric ID or slug, then fetch the project
+      const idOrSlug = id;
+      let project = null as any;
+      if (!isNaN(parseInt(idOrSlug))) {
+        project = await knex('projects').where('id', idOrSlug).first();
+      } else {
+        project = await knex('projects').where('slug', idOrSlug).first();
+        // Fallback: try by exact name if slug not found
+        if (!project) {
+          project = await knex('projects').where('name', idOrSlug).first();
+        }
+      }
       
       if (!project) {
         return ctx.notFound('Project not found');
       }
+      
+      const projectId = project.id;
 
       // Initialize related data objects
       let images = [];
@@ -302,7 +307,7 @@ export default {
       try {
         // Get project images (if table exists)
         images = await knex('project_images')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .orderBy('display_order', 'asc')
           .select('*');
       } catch (err) {
@@ -313,7 +318,7 @@ export default {
         // Get project facilities through junction table (if tables exist)
         facilities = await knex('project_facilities')
           .join('facilities', 'project_facilities.facility_id', 'facilities.id')
-          .where('project_facilities.project_id', id)
+          .where('project_facilities.project_id', projectId)
           .select('facilities.id', 'facilities.name', 'facilities.description', 'facilities.icon')
           .orderBy('facilities.name', 'asc');
       } catch (err) {
@@ -325,7 +330,7 @@ export default {
         // Get project features through junction table (if tables exist)
         features = await knex('project_features')
           .join('features', 'project_features.feature_id', 'features.id')
-          .where('project_features.project_id', id)
+          .where('project_features.project_id', projectId)
           .select('features.*');
       } catch (err) {
         console.log('features tables not accessible:', err.message);
@@ -377,7 +382,7 @@ export default {
       try {
         // Get nearby amenities (if table exists)
         nearbyAmenities = await knex('nearby_amenities')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('*');
       } catch (err) {
         console.log('nearby_amenities table not accessible:', err.message);
@@ -386,7 +391,7 @@ export default {
       try {
         // Get similar projects (if table exists)
         similarProjects = await knex('similar_projects')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('id', 'name', 'location', 'price', 'developer', 'completion', 'image_url');
       } catch (err) {
         console.log('similar_projects table not accessible:', err.message);
@@ -418,7 +423,7 @@ export default {
       try {
         // Get unit availability (if table exists)
         unitAvailability = await knex('unit_availability')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('*');
       } catch (err) {
         console.log('unit_availability table not accessible:', err.message);
@@ -427,7 +432,7 @@ export default {
       try {
         // Get unit types (if table exists)
         unitTypes = await knex('unit_types')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('*');
       } catch (err) {
         console.log('unit_types table not accessible:', err.message);
@@ -480,7 +485,7 @@ export default {
       try {
         // Get site plans for this project (if table exists)
         sitePlans = await knex('site_plans')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('*');
         
         // If no site plans found by project_id, try by project name
@@ -496,7 +501,7 @@ export default {
       try {
         // Get unit pricing for this project (if table exists)
         unitPricing = await knex('unit_pricing')
-          .where('project_id', id)
+          .where('project_id', projectId)
           .select('*');
       } catch (err) {
         console.log('unit_pricing table not accessible:', err.message);
