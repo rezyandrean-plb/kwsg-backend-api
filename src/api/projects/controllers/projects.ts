@@ -2,78 +2,260 @@
  * A set of functions called "actions" for `projects`
  */
 
+// Simple in-memory cache for projects
+const projectsCache = {
+  data: null,
+  timestamp: null,
+  ttl: 5 * 60 * 1000, // 5 minutes
+  isExpired() {
+    return !this.timestamp || (Date.now() - this.timestamp) > this.ttl;
+  },
+  set(data) {
+    this.data = data;
+    this.timestamp = Date.now();
+  },
+  get() {
+    return this.isExpired() ? null : this.data;
+  },
+  clear() {
+    this.data = null;
+    this.timestamp = null;
+  }
+};
+
 export default {
-  // Get all projects
+  // Get all projects with optimized performance
   async find(ctx) {
     try {
       console.log('Projects find method called');
+      
+      // Check cache first (only for first page without filters)
+      const { 
+        page = '1', 
+        pageSize = '8', 
+        limit, 
+        offset,
+        sort = 'created_at:desc',
+        filters = {},
+        populate = 'developer',
+        useCache = 'true'
+      } = ctx.query;
+      
+      // Use cache only for first page without filters
+      if (useCache === 'true' && page === '1' && Object.keys(filters).length === 0) {
+        const cachedData = projectsCache.get();
+        if (cachedData) {
+          console.log('Returning cached projects data');
+          return cachedData;
+        }
+      }
+      
+      // Calculate pagination
+      const actualLimit = limit ? parseInt(limit) : parseInt(pageSize);
+      const actualOffset = offset ? parseInt(offset) : ((parseInt(page) - 1) * actualLimit);
       
       // Get database connection
       const knex = strapi.db.connection;
       console.log('Database connection obtained');
       
-      // Get actual projects data
-      const projects = await knex('projects')
+      // Build base query with pagination
+      let query = knex('projects')
         .select('*')
-        .orderBy('created_at', 'desc');
+        .limit(actualLimit)
+        .offset(actualOffset);
       
+      // Apply sorting
+      if (sort) {
+        const [field, direction] = sort.split(':');
+        query = query.orderBy(field, direction || 'asc');
+      } else {
+        query = query.orderBy('created_at', 'desc');
+      }
+      
+      // Apply filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+          if (typeof filters[key] === 'string') {
+            query = query.where(key, 'like', `%${filters[key]}%`);
+          } else {
+            query = query.where(key, filters[key]);
+          }
+        }
+      });
+      
+      // Get projects with pagination
+      const projects = await query;
       console.log('Projects count:', projects.length);
       
-      // Enhance projects with developer information
-      const data = await Promise.all(projects.map(async (project) => {
-        let developer = null;
-        
+      // Get total count for pagination metadata
+      const countQuery = knex('projects');
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+          if (typeof filters[key] === 'string') {
+            countQuery.where(key, 'like', `%${filters[key]}%`);
+          } else {
+            countQuery.where(key, filters[key]);
+          }
+        }
+      });
+      const totalCount = await countQuery.count('* as total').first();
+      
+      // Optimize developer lookup - fetch all developers at once
+      let developersMap = new Map();
+      if (populate === 'developer' || populate === 'true') {
         try {
-          if (project.developer) {
-            // First try exact match
-            developer = await knex('developers')
-              .where('name', project.developer)
-              .first();
+          // Get all unique developer names from projects
+          const developerNames = Array.from(new Set(projects.map(p => p.developer).filter(Boolean)));
+          
+          if (developerNames.length > 0) {
+            // Fetch all developers in one query
+            const developers = await knex('developers')
+              .whereIn('name', developerNames)
+              .select('*');
             
-            // If no exact match, try partial match
-            if (!developer) {
-              developer = await knex('developers')
-                .where('name', 'like', `%${project.developer}%`)
-                .orWhere('name', 'like', `%${project.developer.split(' ')[0]}%`)
-                .first();
-            }
-            
-            // If still no match, create a basic developer object with the name
-            if (!developer) {
-              developer = {
-                name: project.developer,
-                description: null,
-                logo_url: null,
-                website: null,
-                contact_email: null,
-                contact_phone: null
-              };
-            }
+            // Create a map for fast lookup
+            developers.forEach(dev => {
+              developersMap.set(dev.name, dev);
+            });
           }
         } catch (err) {
           console.log('developers table not accessible:', err.message);
-          // If table is not accessible, still provide developer name if available
-          if (project.developer) {
-            developer = {
-              name: project.developer,
-              description: null,
-              logo_url: null,
-              website: null,
-              contact_email: null,
-              contact_phone: null
-            };
-          }
+        }
+      }
+      
+      // Enhance projects with developer information using the map
+      const data = projects.map(project => {
+        let developer = null;
+        
+        if (project.developer && developersMap.has(project.developer)) {
+          developer = developersMap.get(project.developer);
+        } else if (project.developer) {
+          // Fallback: create basic developer object
+          developer = {
+            name: project.developer,
+            description: null,
+            logo_url: null,
+            website: null,
+            contact_email: null,
+            contact_phone: null
+          };
         }
         
         return {
           ...project,
           developer
         };
-      }));
+      });
       
-      return { data };
+      // Prepare response
+      const response = { 
+        data,
+        meta: {
+          pagination: {
+            page: parseInt(page),
+            pageSize: actualLimit,
+            pageCount: Math.ceil(Number(totalCount.total) / actualLimit),
+            total: totalCount.total
+          }
+        }
+      };
+      
+      // Cache the result for first page without filters
+      if (useCache === 'true' && page === '1' && Object.keys(filters).length === 0) {
+        projectsCache.set(response);
+      }
+      
+      return response;
     } catch (err) {
       console.error('Error in find method:', err);
+      ctx.throw(500, err);
+    }
+  },
+
+  // Get projects with minimal data for faster loading
+  async findMinimal(ctx) {
+    try {
+      console.log('Projects findMinimal method called');
+      
+      const { 
+        page = '1', 
+        pageSize = '8', 
+        limit, 
+        offset,
+        sort = 'created_at:desc',
+        filters = {}
+      } = ctx.query;
+      
+      // Calculate pagination
+      const actualLimit = limit ? parseInt(limit) : parseInt(pageSize);
+      const actualOffset = offset ? parseInt(offset) : ((parseInt(page) - 1) * actualLimit);
+      
+      const knex = strapi.db.connection;
+      
+      // Select only essential fields for faster query
+      let query = knex('projects')
+        .select([
+          'id',
+          'name',
+          'location',
+          'price',
+          'price_from',
+          'developer',
+          'completion',
+          'status',
+          'image_url_banner',
+          'created_at'
+        ])
+        .limit(actualLimit)
+        .offset(actualOffset);
+      
+      // Apply sorting
+      if (sort) {
+        const [field, direction] = sort.split(':');
+        query = query.orderBy(field, direction || 'asc');
+      } else {
+        query = query.orderBy('created_at', 'desc');
+      }
+      
+      // Apply filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+          if (typeof filters[key] === 'string') {
+            query = query.where(key, 'like', `%${filters[key]}%`);
+          } else {
+            query = query.where(key, filters[key]);
+          }
+        }
+      });
+      
+      const projects = await query;
+      
+      // Get total count
+      const countQuery = knex('projects');
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+          if (typeof filters[key] === 'string') {
+            countQuery.where(key, 'like', `%${filters[key]}%`);
+          } else {
+            countQuery.where(key, filters[key]);
+          }
+        }
+      });
+      const totalCount = await countQuery.count('* as total').first();
+      
+      return { 
+        data: projects,
+        meta: {
+          pagination: {
+            page: parseInt(page),
+            pageSize: actualLimit,
+            pageCount: Math.ceil(Number(totalCount.total) / actualLimit),
+            total: totalCount.total
+          }
+        }
+      };
+    } catch (err) {
+      console.error('Error in findMinimal method:', err);
       ctx.throw(500, err);
     }
   },

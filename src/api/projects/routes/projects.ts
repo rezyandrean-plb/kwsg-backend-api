@@ -8,7 +8,7 @@ export default {
         policies: [],
         middlewares: [],
         auth: false,
-        description: 'Retrieve all projects',
+        description: 'Retrieve all projects with pagination and filtering',
         tag: {
           plugin: 'api::projects.projects',
           name: 'Projects',
@@ -28,6 +28,92 @@ export default {
                         $ref: '#/components/schemas/Project',
                       },
                     },
+                    meta: {
+                      type: 'object',
+                      properties: {
+                        pagination: {
+                          type: 'object',
+                          properties: {
+                            page: { type: 'integer' },
+                            pageSize: { type: 'integer' },
+                            pageCount: { type: 'integer' },
+                            total: { type: 'integer' }
+                          }
+                        }
+                      }
+                    }
+                  },
+                },
+              },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/projects/minimal',
+      handler: 'projects.findMinimal',
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+        description: 'Retrieve projects with minimal data for faster loading',
+        tag: {
+          plugin: 'api::projects.projects',
+          name: 'Projects',
+          actionType: 'findMinimal',
+        },
+        responses: {
+          200: {
+            description: 'List of projects with minimal data retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'integer' },
+                          name: { type: 'string' },
+                          location: { type: 'string' },
+                          price: { type: 'string' },
+                          price_from: { type: 'string' },
+                          developer: { type: 'string' },
+                          completion: { type: 'string' },
+                          status: { type: 'string' },
+                          image_url_banner: { type: 'string' },
+                          created_at: { type: 'string', format: 'date-time' }
+                        }
+                      },
+                    },
+                    meta: {
+                      type: 'object',
+                      properties: {
+                        pagination: {
+                          type: 'object',
+                          properties: {
+                            page: { type: 'integer' },
+                            pageSize: { type: 'integer' },
+                            pageCount: { type: 'integer' },
+                            total: { type: 'integer' }
+                          }
+                        }
+                      }
+                    }
                   },
                 },
               },
