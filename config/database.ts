@@ -61,17 +61,17 @@ export default ({ env }) => {
         statement_timeout: env.int('DATABASE_STATEMENT_TIMEOUT', 30000),
       },
       pool: { 
-        min: env.int('DATABASE_POOL_MIN', 1), 
-        max: env.int('DATABASE_POOL_MAX', 3),
-        acquireTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 30000),
-        createTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 30000),
-        destroyTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 30000),
-        idleTimeoutMillis: env.int('DATABASE_IDLE_TIMEOUT', 30000),
+        min: env.int('DATABASE_POOL_MIN', 2), 
+        max: env.int('DATABASE_POOL_MAX', 10),
+        acquireTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 15000),
+        createTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 15000),
+        destroyTimeoutMillis: env.int('DATABASE_CONNECTION_TIMEOUT', 15000),
+        idleTimeoutMillis: env.int('DATABASE_IDLE_TIMEOUT', 60000),
         reapIntervalMillis: env.int('DATABASE_REAP_INTERVAL', 1000),
-        createRetryIntervalMillis: env.int('DATABASE_CREATE_RETRY_INTERVAL', 200),
+        createRetryIntervalMillis: env.int('DATABASE_CREATE_RETRY_INTERVAL', 100),
         // Add pool configuration
         afterCreate: (conn, done) => {
-          conn.query('SET statement_timeout = 30000', done);
+          conn.query('SET statement_timeout = 15000', done);
         },
       },
     },

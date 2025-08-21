@@ -2,11 +2,11 @@
  * A set of functions called "actions" for `projects`
  */
 
-// Simple in-memory cache for projects
+// Enhanced in-memory cache for projects with better TTL management
 const projectsCache = {
   data: null,
   timestamp: null,
-  ttl: 5 * 60 * 1000, // 5 minutes
+  ttl: 10 * 60 * 1000, // Increased to 10 minutes for better cache hit rate
   isExpired() {
     return !this.timestamp || (Date.now() - this.timestamp) > this.ttl;
   },
@@ -19,6 +19,30 @@ const projectsCache = {
   },
   clear() {
     this.data = null;
+    this.timestamp = null;
+  }
+};
+
+// Cache for developers to avoid repeated queries
+const developersCache = {
+  data: new Map(),
+  timestamp: null,
+  ttl: 30 * 60 * 1000, // 30 minutes for developers (less frequently changing)
+  isExpired() {
+    return !this.timestamp || (Date.now() - this.timestamp) > this.ttl;
+  },
+  set(developers) {
+    this.data.clear();
+    developers.forEach(dev => {
+      this.data.set(dev.name, dev);
+    });
+    this.timestamp = Date.now();
+  },
+  get() {
+    return this.isExpired() ? null : this.data;
+  },
+  clear() {
+    this.data.clear();
     this.timestamp = null;
   }
 };
@@ -58,25 +82,39 @@ export default {
       const knex = strapi.db.connection;
       console.log('Database connection obtained');
       
-      // Build base query with pagination
+      // Optimize query by selecting only needed fields
+      const selectFields = [
+        'id', 'name', 'location', 'price', 'price_from', 'developer', 
+        'completion', 'status', 'image_url_banner', 'created_at', 'updated_at',
+        'description', 'type', 'bedrooms', 'bathrooms', 'slug'
+      ];
+      
+      // Build base query with pagination and optimized field selection
       let query = knex('projects')
-        .select('*')
+        .select(selectFields)
         .limit(actualLimit)
         .offset(actualOffset);
       
-      // Apply sorting
+      // Apply sorting with index optimization
       if (sort) {
         const [field, direction] = sort.split(':');
-        query = query.orderBy(field, direction || 'asc');
+        // Ensure we're using indexed fields for sorting
+        const allowedSortFields = ['created_at', 'updated_at', 'name', 'price', 'status'];
+        if (allowedSortFields.includes(field)) {
+          query = query.orderBy(field, direction || 'asc');
+        } else {
+          query = query.orderBy('created_at', 'desc');
+        }
       } else {
         query = query.orderBy('created_at', 'desc');
       }
       
-      // Apply filters
+      // Apply filters with optimization
       Object.keys(filters).forEach(key => {
         if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           if (typeof filters[key] === 'string') {
-            query = query.where(key, 'like', `%${filters[key]}%`);
+            // Use case-insensitive search for better performance
+            query = query.whereRaw(`LOWER(${key}) LIKE LOWER(?)`, [`%${filters[key]}%`]);
           } else {
             query = query.where(key, filters[key]);
           }
@@ -87,12 +125,12 @@ export default {
       const projects = await query;
       console.log('Projects count:', projects.length);
       
-      // Get total count for pagination metadata
+      // Optimize count query by using the same filters
       const countQuery = knex('projects');
       Object.keys(filters).forEach(key => {
         if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           if (typeof filters[key] === 'string') {
-            countQuery.where(key, 'like', `%${filters[key]}%`);
+            countQuery.whereRaw(`LOWER(${key}) LIKE LOWER(?)`, [`%${filters[key]}%`]);
           } else {
             countQuery.where(key, filters[key]);
           }
@@ -100,23 +138,34 @@ export default {
       });
       const totalCount = await countQuery.count('* as total').first();
       
-      // Optimize developer lookup - fetch all developers at once
+      // Optimize developer lookup with enhanced caching
       let developersMap = new Map();
       if (populate === 'developer' || populate === 'true') {
         try {
-          // Get all unique developer names from projects
-          const developerNames = Array.from(new Set(projects.map(p => p.developer).filter(Boolean)));
-          
-          if (developerNames.length > 0) {
-            // Fetch all developers in one query
-            const developers = await knex('developers')
-              .whereIn('name', developerNames)
-              .select('*');
+          // Check developers cache first
+          const cachedDevelopers = developersCache.get();
+          if (cachedDevelopers) {
+            developersMap = cachedDevelopers;
+            console.log('Using cached developers data');
+          } else {
+            // Get all unique developer names from projects
+            const developerNames = Array.from(new Set(projects.map(p => p.developer).filter(Boolean)));
             
-            // Create a map for fast lookup
-            developers.forEach(dev => {
-              developersMap.set(dev.name, dev);
-            });
+            if (developerNames.length > 0) {
+              // Fetch all developers in one query with specific fields
+              const developers = await knex('developers')
+                .whereIn('name', developerNames)
+                .select(['id', 'name', 'description', 'logo_url', 'website', 'contact_email', 'contact_phone']);
+              
+              // Create a map for fast lookup
+              developers.forEach(dev => {
+                developersMap.set(dev.name, dev);
+              });
+              
+              // Cache the developers
+              developersCache.set(developers);
+              console.log('Cached developers data');
+            }
           }
         } catch (err) {
           console.log('developers table not accessible:', err.message);
@@ -163,6 +212,7 @@ export default {
       // Cache the result for first page without filters
       if (useCache === 'true' && page === '1' && Object.keys(filters).length === 0) {
         projectsCache.set(response);
+        console.log('Cached projects data');
       }
       
       return response;
@@ -209,19 +259,26 @@ export default {
         .limit(actualLimit)
         .offset(actualOffset);
       
-      // Apply sorting
+      // Apply sorting with index optimization
       if (sort) {
         const [field, direction] = sort.split(':');
-        query = query.orderBy(field, direction || 'asc');
+        // Ensure we're using indexed fields for sorting
+        const allowedSortFields = ['created_at', 'updated_at', 'name', 'price', 'status'];
+        if (allowedSortFields.includes(field)) {
+          query = query.orderBy(field, direction || 'asc');
+        } else {
+          query = query.orderBy('created_at', 'desc');
+        }
       } else {
         query = query.orderBy('created_at', 'desc');
       }
       
-      // Apply filters
+      // Apply filters with optimization
       Object.keys(filters).forEach(key => {
         if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           if (typeof filters[key] === 'string') {
-            query = query.where(key, 'like', `%${filters[key]}%`);
+            // Use case-insensitive search for better performance
+            query = query.whereRaw(`LOWER(${key}) LIKE LOWER(?)`, [`%${filters[key]}%`]);
           } else {
             query = query.where(key, filters[key]);
           }
@@ -230,12 +287,12 @@ export default {
       
       const projects = await query;
       
-      // Get total count
+      // Optimize count query by using the same filters
       const countQuery = knex('projects');
       Object.keys(filters).forEach(key => {
         if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           if (typeof filters[key] === 'string') {
-            countQuery.where(key, 'like', `%${filters[key]}%`);
+            countQuery.whereRaw(`LOWER(${key}) LIKE LOWER(?)`, [`%${filters[key]}%`]);
           } else {
             countQuery.where(key, filters[key]);
           }
@@ -260,7 +317,7 @@ export default {
     }
   },
 
-  // Get a single project by ID or slug with detailed related data
+  // Get a single project by ID or slug with optimized related data fetching
   async findOne(ctx) {
     try {
       const { id } = ctx.params;
@@ -303,58 +360,63 @@ export default {
       let unitTypes = [];
       let brochures = [];
       let imageGallery = [];
+      let sitePlans = [];
+      let unitPricing = [];
 
-      try {
-        // Get project images (if table exists)
-        images = await knex('project_images')
+      // Use Promise.allSettled to fetch all related data concurrently
+      // This reduces the N+1 query problem by running queries in parallel
+      const relatedDataPromises = [
+        // Project images
+        knex('project_images')
           .where('project_id', projectId)
           .orderBy('display_order', 'asc')
-          .select('*');
-      } catch (err) {
-        console.log('project_images table not accessible:', err.message);
-      }
-
-      try {
-        // Get project facilities through junction table (if tables exist)
-        facilities = await knex('project_facilities')
+          .select(['id', 'image_url', 'display_order', 'alt_text', 'is_primary', 'caption'])
+          .catch(() => []),
+        
+        // Project facilities
+        knex('project_facilities')
           .join('facilities', 'project_facilities.facility_id', 'facilities.id')
           .where('project_facilities.project_id', projectId)
-          .select('facilities.id', 'facilities.name', 'facilities.description', 'facilities.icon')
-          .orderBy('facilities.name', 'asc');
-      } catch (err) {
-        console.log('facilities tables not accessible:', err.message);
-        facilities = [];
-      }
-
-      try {
-        // Get project features through junction table (if tables exist)
-        features = await knex('project_features')
+          .select(['facilities.id', 'facilities.name', 'facilities.description', 'facilities.icon'])
+          .orderBy('facilities.name', 'asc')
+          .catch(() => []),
+        
+        // Project features
+        knex('project_features')
           .join('features', 'project_features.feature_id', 'features.id')
           .where('project_features.project_id', projectId)
-          .select('features.*');
-      } catch (err) {
-        console.log('features tables not accessible:', err.message);
-      }
-
-      try {
-        // Get developer information (if table exists)
-        if (project.developer) {
-          // First try exact match
-          developer = await knex('developers')
-            .where('name', project.developer)
-            .first();
-          
-          // If no exact match, try partial match
-          if (!developer) {
-            developer = await knex('developers')
-              .where('name', 'like', `%${project.developer}%`)
-              .orWhere('name', 'like', `%${project.developer.split(' ')[0]}%`)
-              .first();
-          }
-          
-          // If still no match, create a basic developer object with the name
-          if (!developer) {
-            developer = {
+          .select(['features.id', 'features.name', 'features.description', 'features.icon'])
+          .catch(() => []),
+        
+        // Developer information (use cached data if available)
+        (async () => {
+          if (project.developer) {
+            // Check cache first
+            const cachedDevelopers = developersCache.get();
+            if (cachedDevelopers && cachedDevelopers.has(project.developer)) {
+              return cachedDevelopers.get(project.developer);
+            }
+            
+            // Fetch from database if not cached
+            try {
+              const dev = await knex('developers')
+                .where('name', project.developer)
+                .select(['id', 'name', 'description', 'logo_url', 'website', 'contact_email', 'contact_phone'])
+                .first();
+              
+              if (dev) {
+                // Update cache
+                if (cachedDevelopers) {
+                  cachedDevelopers.set(dev.name, dev);
+                }
+                return dev;
+              }
+            } catch (err) {
+              console.log('developers table not accessible:', err.message);
+            }
+            
+            // Fallback developer object
+            return {
               name: project.developer,
               description: null,
               logo_url: null,
@@ -363,148 +425,131 @@ export default {
               contact_phone: null
             };
           }
-        }
-      } catch (err) {
-        console.log('developers table not accessible:', err.message);
-        // If table is not accessible, still provide developer name if available
-        if (project.developer) {
-          developer = {
-            name: project.developer,
-            description: null,
-            logo_url: null,
-            website: null,
-            contact_email: null,
-            contact_phone: null
-          };
-        }
-      }
-
-      try {
-        // Get nearby amenities (if table exists)
-        nearbyAmenities = await knex('nearby_amenities')
+          return null;
+        })(),
+        
+        // Nearby amenities
+        knex('nearby_amenities')
           .where('project_id', projectId)
-          .select('*');
-      } catch (err) {
-        console.log('nearby_amenities table not accessible:', err.message);
-      }
-
-      try {
-        // Get similar projects (if table exists)
-        similarProjects = await knex('similar_projects')
+          .select(['id', 'name', 'distance', 'type', 'description'])
+          .catch(() => []),
+        
+        // Similar projects
+        knex('similar_projects')
           .where('project_id', projectId)
-          .select('id', 'name', 'location', 'price', 'developer', 'completion', 'image_url');
-      } catch (err) {
-        console.log('similar_projects table not accessible:', err.message);
-      }
-
-      try {
-        // Get floor plans (if table exists) - floor_plans table uses project_name, not project_id
-        floorPlans = await knex('floor_plans')
+          .select(['id', 'name', 'location', 'price', 'developer', 'completion', 'image_url'])
+          .catch(() => []),
+        
+        // Floor plans
+        knex('floor_plans')
           .where('project_name', project.name)
-          .select('*');
+          .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url'])
+          .catch(() => []),
         
-        // If no floor plans found by project.name, try by project.project_name
-        if (floorPlans.length === 0) {
-          floorPlans = await knex('floor_plans')
-            .where('project_name', project.project_name)
-            .select('*');
-        }
+        // Unit availability
+        knex('unit_availability')
+          .where('project_id', projectId)
+          .select(['id', 'unit_type', 'bedrooms', 'bathrooms', 'price', 'available_units', 'img'])
+          .catch(() => []),
         
-        // Transform floor plans to include proper image URL field
-        floorPlans = floorPlans.map(plan => ({
-          ...plan,
-          image_url: plan.img || plan.floor_plan_image || plan.image_url || null, // Primary image URL field
-          img: plan.img || plan.floor_plan_image || plan.image_url || null // Keep img field for backward compatibility
-        }));
-      } catch (err) {
-        console.log('floor_plans table not accessible:', err.message);
-      }
-
-      try {
-        // Get unit availability (if table exists)
-        unitAvailability = await knex('unit_availability')
+        // Unit types
+        knex('unit_types')
           .where('project_id', projectId)
-          .select('*');
-      } catch (err) {
-        console.log('unit_availability table not accessible:', err.message);
-      }
-
-      try {
-        // Get unit types (if table exists)
-        unitTypes = await knex('unit_types')
-          .where('project_id', projectId)
-          .select('*');
-      } catch (err) {
-        console.log('unit_types table not accessible:', err.message);
-      }
-
-      try {
-        // Get brochures for this project (if table exists) - brochures are linked by project name in brochure_title
-        brochures = await knex('brochures')
+          .select(['id', 'name', 'description', 'bedrooms', 'bathrooms', 'price_range'])
+          .catch(() => []),
+        
+        // Brochures
+        knex('brochures')
           .where('brochure_title', 'like', `%${project.name}%`)
           .where('is_active', true)
           .orderBy('created_at', 'desc')
-          .select('*');
+          .select(['id', 'brochure_title', 'brochure_url', 'file_url', 'is_active', 'created_at'])
+          .catch(() => []),
         
-        // Transform brochures to include proper URL field
-        brochures = brochures.map(brochure => ({
-          ...brochure,
-          file_url: brochure.brochure_url || null, // Primary file URL field
-          brochure_url: brochure.brochure_url || null // Keep original field for backward compatibility
-        }));
-      } catch (err) {
-        console.log('brochures table not accessible:', err.message);
-      }
-
-      try {
-        // Get image gallery for this project (if table exists) - image_galleries are linked by project_name
-        imageGallery = await knex('image_galleries')
+        // Image gallery
+        knex('image_galleries')
           .where('project_name', project.name)
           .where('is_active', true)
           .orderBy('display_order', 'asc')
           .orderBy('created_at', 'desc')
-          .select('*');
+          .select(['id', 'project_name', 'image_url', 'display_order', 'is_active', 'created_at'])
+          .catch(() => []),
         
-        // If no image gallery found by project.name, try by project.project_name
-        if (imageGallery.length === 0) {
+        // Site plans
+        knex('site_plans')
+          .where('project_id', projectId)
+          .select(['id', 'project_id', 'site_plan_url', 'description'])
+          .catch(() => []),
+        
+        // Unit pricing
+        knex('unit_pricing')
+          .where('project_id', projectId)
+          .select(['id', 'unit_type', 'price', 'bedrooms', 'bathrooms'])
+          .catch(() => [])
+      ];
+
+      // Execute all queries concurrently
+      const results = await Promise.allSettled(relatedDataPromises);
+      
+      // Extract results
+      [images, facilities, features, developer, nearbyAmenities, similarProjects, 
+       floorPlans, unitAvailability, unitTypes, brochures, imageGallery, sitePlans, unitPricing] = 
+        results.map(result => result.status === 'fulfilled' ? result.value : []);
+
+      // Transform floor plans to include proper image URL field
+      floorPlans = floorPlans.map(plan => ({
+        ...plan,
+        image_url: plan.img || plan.floor_plan_image || plan.image_url || null,
+        img: plan.img || plan.floor_plan_image || plan.image_url || null
+      }));
+
+      // Transform brochures to include proper URL field
+      brochures = brochures.map(brochure => ({
+        ...brochure,
+        file_url: brochure.brochure_url || null,
+        brochure_url: brochure.brochure_url || null
+      }));
+
+      // Fallback for floor plans by project_name if not found by project.name
+      if (floorPlans.length === 0 && project.project_name) {
+        try {
+          const fallbackFloorPlans = await knex('floor_plans')
+            .where('project_name', project.project_name)
+            .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url']);
+          
+          floorPlans = fallbackFloorPlans.map(plan => ({
+            ...plan,
+            image_url: plan.img || plan.floor_plan_image || plan.image_url || null,
+            img: plan.img || plan.floor_plan_image || plan.image_url || null
+          }));
+        } catch (err) {
+          console.log('Fallback floor_plans query failed:', err.message);
+        }
+      }
+
+      // Fallback for image gallery by project_name if not found by project.name
+      if (imageGallery.length === 0 && project.project_name) {
+        try {
           imageGallery = await knex('image_galleries')
             .where('project_name', project.project_name)
             .where('is_active', true)
             .orderBy('display_order', 'asc')
             .orderBy('created_at', 'desc')
-            .select('*');
+            .select(['id', 'project_name', 'image_url', 'display_order', 'is_active', 'created_at']);
+        } catch (err) {
+          console.log('Fallback image_galleries query failed:', err.message);
         }
-      } catch (err) {
-        console.log('image_galleries table not accessible:', err.message);
       }
 
-      // Get site plans and unit pricing
-      let sitePlans = [];
-      let unitPricing = [];
-
-      try {
-        // Get site plans for this project (if table exists)
-        sitePlans = await knex('site_plans')
-          .where('project_id', projectId)
-          .select('*');
-        
-        // If no site plans found by project_id, try by project name
-        if (sitePlans.length === 0) {
+      // Fallback for site plans by project name if not found by project_id
+      if (sitePlans.length === 0) {
+        try {
           sitePlans = await knex('site_plans')
             .where('project_name', project.name)
-            .select('*');
+            .select(['id', 'project_name', 'site_plan_url', 'description']);
+        } catch (err) {
+          console.log('Fallback site_plans query failed:', err.message);
         }
-      } catch (err) {
-        console.log('site_plans table not accessible:', err.message);
-      }
-
-      try {
-        // Get unit pricing for this project (if table exists)
-        unitPricing = await knex('unit_pricing')
-          .where('project_id', projectId)
-          .select('*');
-      } catch (err) {
-        console.log('unit_pricing table not accessible:', err.message);
       }
 
       // Combine all data
