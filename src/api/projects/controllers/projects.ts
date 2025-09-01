@@ -443,6 +443,7 @@ export default {
         // Floor plans
         knex('floor_plans')
           .where('project_name', project.name)
+          .where('is_available', true)
           .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url'])
           .catch(() => []),
         
@@ -484,6 +485,7 @@ export default {
         // Unit pricing
         knex('unit_pricing')
           .where('project_id', projectId)
+          .where('is_available', true)
           .select(['id', 'unit_type', 'price', 'bedrooms', 'bathrooms'])
           .catch(() => [])
       ];
@@ -515,6 +517,7 @@ export default {
         try {
           const fallbackFloorPlans = await knex('floor_plans')
             .where('project_name', project.project_name)
+            .where('is_available', true)
             .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url']);
           
           floorPlans = fallbackFloorPlans.map(plan => ({
@@ -549,6 +552,18 @@ export default {
             .select(['id', 'project_name', 'site_plan_url', 'description']);
         } catch (err) {
           console.log('Fallback site_plans query failed:', err.message);
+        }
+      }
+
+      // Fallback for unit pricing by project name if not found by project_id
+      if (unitPricing.length === 0 && project.name) {
+        try {
+          unitPricing = await knex('unit_pricing')
+            .where('project_name', project.name)
+            .where('is_available', true)
+            .select(['id', 'unit_type', 'price', 'bedrooms', 'bathrooms']);
+        } catch (err) {
+          console.log('Fallback unit_pricing query failed:', err.message);
         }
       }
 
