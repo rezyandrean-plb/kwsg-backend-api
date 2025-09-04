@@ -440,12 +440,25 @@ export default {
           .select(['id', 'name', 'location', 'price', 'developer', 'completion', 'image_url'])
           .catch(() => []),
         
-        // Floor plans
+        // Floor plans - query by project_name only (no project_id column exists)
         knex('floor_plans')
           .where('project_name', project.name)
-          .where('is_available', true)
-          .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url'])
-          .catch(() => []),
+          .select(['id', 'project_name', 'floor_plan_id', 'floor_plan_type', 'floor_plan_name', 'bedrooms', 'bathrooms', 'size_sqft', 'price', 'img', 'floor_plan_image', 'unit_type', 'description'])
+          .catch((err) => {
+            console.error('Floor plans query error:', err.message);
+            return [];
+          }),
+        
+        // Unit pricing - try both project_id and project_name for better coverage
+        knex('unit_pricing')
+          .where(function() {
+            this.where('project_id', projectId).orWhere('project_name', project.name);
+          })
+          .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info'])
+          .catch((err) => {
+            console.error('Unit pricing query error:', err.message);
+            return [];
+          }),
         
         // Unit availability
         knex('unit_availability')
@@ -479,15 +492,10 @@ export default {
         // Site plans
         knex('site_plans')
           .where('project_id', projectId)
-          .select(['id', 'project_id', 'site_plan_url', 'description'])
+          .select(['id', 'project_id', 'project_name', 'site_plan_id', 'site_plan_name', 'image_url', 'description', 'is_primary', 'layout_info'])
           .catch(() => []),
         
-        // Unit pricing
-        knex('unit_pricing')
-          .where('project_id', projectId)
-          .where('is_available', true)
-          .select(['id', 'unit_type', 'price', 'bedrooms', 'bathrooms'])
-          .catch(() => [])
+
       ];
 
       // Execute all queries concurrently
@@ -495,7 +503,7 @@ export default {
       
       // Extract results
       [images, facilities, features, developer, nearbyAmenities, similarProjects, 
-       floorPlans, unitAvailability, unitTypes, brochures, imageGallery, sitePlans, unitPricing] = 
+       floorPlans, unitPricing, unitAvailability, unitTypes, brochures, imageGallery, sitePlans] = 
         results.map(result => result.status === 'fulfilled' ? result.value : []);
 
       // Transform floor plans to include proper image URL field
@@ -505,6 +513,16 @@ export default {
         img: plan.img || plan.floor_plan_image || plan.image_url || null
       }));
 
+      // Transform unit pricing to ensure consistent field mapping
+      unitPricing = unitPricing.map(pricing => ({
+        ...pricing,
+        price: pricing.price_from || pricing.price || null,
+        price_range: pricing.price_from && pricing.price_to 
+          ? `${pricing.price_from} - ${pricing.price_to}` 
+          : pricing.price_from || pricing.price || null,
+        currency: pricing.currency || 'SGD'
+      }));
+
       // Transform brochures to include proper URL field
       brochures = brochures.map(brochure => ({
         ...brochure,
@@ -512,21 +530,22 @@ export default {
         brochure_url: brochure.brochure_url || null
       }));
 
-      // Fallback for floor plans by project_name if not found by project.name
-      if (floorPlans.length === 0 && project.project_name) {
+      // Fallback for floor plans by project_name if not found (already handled in main query)
+      if (floorPlans.length === 0 && project.name) {
         try {
+          console.log(`Attempting fallback floor plans query for project: ${project.name}`);
           const fallbackFloorPlans = await knex('floor_plans')
-            .where('project_name', project.project_name)
-            .where('is_available', true)
-            .select(['id', 'project_name', 'floor_plan_name', 'bedrooms', 'bathrooms', 'price', 'img', 'floor_plan_image', 'image_url']);
+            .where('project_name', project.name)
+            .select(['id', 'project_name', 'floor_plan_id', 'floor_plan_type', 'floor_plan_name', 'bedrooms', 'bathrooms', 'size_sqft', 'price', 'img', 'floor_plan_image', 'unit_type', 'description']);
           
           floorPlans = fallbackFloorPlans.map(plan => ({
             ...plan,
-            image_url: plan.img || plan.floor_plan_image || plan.image_url || null,
-            img: plan.img || plan.floor_plan_image || plan.image_url || null
+            image_url: plan.img || plan.floor_plan_image || null,
+            img: plan.img || plan.floor_plan_image || null
           }));
+          console.log(`Fallback floor plans found ${floorPlans.length} records`);
         } catch (err) {
-          console.log('Fallback floor_plans query failed:', err.message);
+          console.error('Fallback floor_plans query failed:', err.message);
         }
       }
 
@@ -549,7 +568,7 @@ export default {
         try {
           sitePlans = await knex('site_plans')
             .where('project_name', project.name)
-            .select(['id', 'project_name', 'site_plan_url', 'description']);
+            .select(['id', 'project_id', 'project_name', 'site_plan_id', 'site_plan_name', 'image_url', 'description', 'is_primary', 'layout_info']);
         } catch (err) {
           console.log('Fallback site_plans query failed:', err.message);
         }
@@ -558,14 +577,27 @@ export default {
       // Fallback for unit pricing by project name if not found by project_id
       if (unitPricing.length === 0 && project.name) {
         try {
+          console.log(`Attempting fallback unit pricing query for project: ${project.name}`);
           unitPricing = await knex('unit_pricing')
             .where('project_name', project.name)
-            .where('is_available', true)
-            .select(['id', 'unit_type', 'price', 'bedrooms', 'bathrooms']);
+            .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info']);
+          console.log(`Fallback unit pricing found ${unitPricing.length} records`);
         } catch (err) {
-          console.log('Fallback unit_pricing query failed:', err.message);
+          console.error('Fallback unit_pricing query failed:', err.message);
         }
       }
+
+      // Log summary of data found
+      console.log(`Project ${project.name} (ID: ${projectId}) data summary:`);
+      console.log(`- Images: ${images.length}`);
+      console.log(`- Facilities: ${facilities.length}`);
+      console.log(`- Features: ${features.length}`);
+      console.log(`- Floor Plans: ${floorPlans.length}`);
+      console.log(`- Unit Pricing: ${unitPricing.length}`);
+      console.log(`- Unit Availability: ${unitAvailability.length}`);
+      console.log(`- Brochures: ${brochures.length}`);
+      console.log(`- Image Gallery: ${imageGallery.length}`);
+      console.log(`- Site Plans: ${sitePlans.length}`);
 
       // Combine all data
       const detailedProject = {
