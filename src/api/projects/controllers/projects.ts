@@ -84,9 +84,9 @@ export default {
       
       // Optimize query by selecting only needed fields
       const selectFields = [
-        'id', 'name', 'location', 'price', 'price_from', 'developer', 
+        'id', 'name', 'address as location', 'price', 'price_from', 'developer', 
         'completion', 'status', 'image_url_banner', 'created_at', 'updated_at',
-        'description', 'type', 'bedrooms', 'bathrooms', 'slug', 'tenure'
+        'description', 'type', 'bedrooms', 'bathrooms', 'slug', 'tenure', 'units as unit_available'
       ];
       
       // Build base query with pagination and optimized field selection
@@ -247,7 +247,7 @@ export default {
         .select([
           'id',
           'name',
-          'location',
+          'address as location',
           'price',
           'price_from',
           'developer',
@@ -255,7 +255,8 @@ export default {
           'status',
           'tenure',
           'image_url_banner',
-          'created_at'
+          'created_at',
+          'units as unit_available'
         ])
         .limit(actualLimit)
         .offset(actualOffset);
@@ -438,7 +439,7 @@ export default {
         // Similar projects
         knex('similar_projects')
           .where('project_id', projectId)
-          .select(['id', 'name', 'location', 'price', 'developer', 'completion', 'image_url'])
+          .select(['id', 'name', 'address as location', 'price', 'developer', 'completion', 'image_url'])
           .catch(() => []),
         
         // Floor plans - query by project_name only (no project_id column exists)
