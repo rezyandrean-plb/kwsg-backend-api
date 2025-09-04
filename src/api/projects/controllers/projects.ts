@@ -513,15 +513,37 @@ export default {
         img: plan.img || plan.floor_plan_image || plan.image_url || null
       }));
 
-      // Transform unit pricing to ensure consistent field mapping
-      unitPricing = unitPricing.map(pricing => ({
-        ...pricing,
-        price: pricing.price_from || pricing.price || null,
-        price_range: pricing.price_from && pricing.price_to 
-          ? `${pricing.price_from} - ${pricing.price_to}` 
-          : pricing.price_from || pricing.price || null,
-        currency: pricing.currency || 'SGD'
-      }));
+      // Transform unit pricing to ensure consistent field mapping and include floor plan images
+      unitPricing = unitPricing.map(pricing => {
+        // Find matching floor plan by comparing unit_type with floor_plan_type
+        const matchingFloorPlan = floorPlans.find(plan => 
+          plan.floor_plan_type && pricing.unit_type && 
+          plan.floor_plan_type.toLowerCase().trim() === pricing.unit_type.toLowerCase().trim()
+        );
+        
+        // Get the best available image URL from the matching floor plan
+        const floorPlanImage = matchingFloorPlan ? 
+          (matchingFloorPlan.img || matchingFloorPlan.floor_plan_image || null) : null;
+        
+        // Log matching results for debugging
+        if (matchingFloorPlan) {
+          console.log(`✅ Matched unit pricing "${pricing.unit_type}" with floor plan "${matchingFloorPlan.floor_plan_type}" (ID: ${matchingFloorPlan.id})`);
+        } else {
+          console.log(`⚠️  No floor plan match found for unit pricing "${pricing.unit_type}"`);
+        }
+        
+        return {
+          ...pricing,
+          price: pricing.price_from || pricing.price || null,
+          price_range: pricing.price_from && pricing.price_to 
+            ? `${pricing.price_from} - ${pricing.price_to}` 
+            : pricing.price_from || pricing.price || null,
+          currency: pricing.currency || 'SGD',
+          floor_plan_image: floorPlanImage,
+          floor_plan_id: matchingFloorPlan?.id || null,
+          floor_plan_name: matchingFloorPlan?.floor_plan_name || null
+        };
+      });
 
       // Transform brochures to include proper URL field
       brochures = brochures.map(brochure => ({
