@@ -86,7 +86,7 @@ export default {
       const selectFields = [
         'id', 'name', 'address as location', 'price', 'price_from', 'developer', 
         'completion', 'status', 'image_url_banner', 'created_at', 'updated_at',
-        'description', 'type', 'bedrooms', 'bathrooms', 'slug', 'tenure', 'units as unit_available'
+        'description', 'type', 'bedrooms', 'bathrooms', 'slug', 'tenure', 'units'
       ];
       
       // Build base query with pagination and optimized field selection
@@ -256,7 +256,7 @@ export default {
           'tenure',
           'image_url_banner',
           'created_at',
-          'units as unit_available'
+          'units'
         ])
         .limit(actualLimit)
         .offset(actualOffset);
