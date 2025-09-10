@@ -678,7 +678,10 @@ export default {
   async create(ctx) {
     try {
       const knex = strapi.db.connection;
-      const projectData = ctx.request.body;
+      // Support both Strapi-style { data: {...} } and raw JSON bodies
+      const projectData = (ctx.request.body && (ctx.request.body as any).data)
+        ? (ctx.request.body as any).data
+        : ctx.request.body;
       
       console.log('Creating project with data:', projectData);
       
@@ -750,7 +753,10 @@ export default {
     try {
       const { id } = ctx.params;
       const knex = strapi.db.connection;
-      const updateData = ctx.request.body;
+      // Support both Strapi-style { data: {...} } and raw JSON bodies
+      const updateData = (ctx.request.body && (ctx.request.body as any).data)
+        ? (ctx.request.body as any).data
+        : ctx.request.body;
       
       console.log('Updating project ID:', id, 'with data:', updateData);
       
