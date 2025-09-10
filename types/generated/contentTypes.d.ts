@@ -647,8 +647,10 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     description: Schema.Attribute.Text;
     developer: Schema.Attribute.String;
     district: Schema.Attribute.String;
+    facilities: Schema.Attribute.JSON;
     features: Schema.Attribute.JSON;
     image_url_banner: Schema.Attribute.String;
+    images: Schema.Attribute.JSON;
     latitude: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -658,7 +660,8 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     location: Schema.Attribute.String;
     longitude: Schema.Attribute.String;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String;
+    overview_quote: Schema.Attribute.Text;
     price: Schema.Attribute.String;
     price_from: Schema.Attribute.String;
     price_per_sqft: Schema.Attribute.String;
@@ -667,7 +670,7 @@ export interface ApiProjectsProject extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     site_area: Schema.Attribute.String;
     size: Schema.Attribute.String;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID<'name'>;
     status: Schema.Attribute.String;
     tenure: Schema.Attribute.String;
     title: Schema.Attribute.String;
