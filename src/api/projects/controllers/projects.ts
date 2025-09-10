@@ -47,6 +47,32 @@ const developersCache = {
   }
 };
 
+// Helper methods for project operations
+const generateSlug = (text) => {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim();
+};
+
+const isStep1Update = (data) => {
+  // Step 1 update: only has overview fields
+  const step1Fields = ['title', 'description', 'overview_quote'];
+  const hasStep1Fields = step1Fields.some(field => data[field] !== undefined);
+  const hasStep2Fields = ['name', 'slug', 'location', 'type', 'tenure', 'completion', 'units', 'price_from', 'price', 'bedrooms', 'bathrooms', 'size', 'status', 'facilities', 'images'].some(field => data[field] !== undefined);
+  
+  return hasStep1Fields && !hasStep2Fields;
+};
+
+const isStep2Update = (data) => {
+  // Step 2 update: has complete project fields
+  const step2Fields = ['name', 'location', 'type', 'tenure', 'completion', 'units', 'price_from', 'price', 'bedrooms', 'bathrooms', 'size', 'status'];
+  return step2Fields.some(field => data[field] !== undefined);
+};
+
 export default {
   // Get all projects with optimized performance
   async find(ctx) {
@@ -648,77 +674,182 @@ export default {
     }
   },
 
-  // Create a new project
+  // Create a new project (Step 1: Minimal project creation)
   async create(ctx) {
     try {
       const knex = strapi.db.connection;
       const projectData = ctx.request.body;
       
-      // Validate required fields
-      if (!projectData.name) {
-        return ctx.badRequest('Project name is required');
+      console.log('Creating project with data:', projectData);
+      
+      // Validate required fields for Step 1 (minimal creation)
+      if (!projectData.title) {
+        return ctx.badRequest('Project title is required for Step 1 creation');
       }
       
-      // Extract images from projectData to handle separately
-      const { images, ...projectFields } = projectData;
+      // Handle developer relationship
+      let developerName = null;
+      if (projectData.developer) {
+        if (typeof projectData.developer === 'object' && projectData.developer.name) {
+          developerName = projectData.developer.name;
+        } else if (typeof projectData.developer === 'string') {
+          developerName = projectData.developer;
+        }
+      }
       
-      // Insert into projects table (excluding images field)
+      // Prepare project data for insertion
+      const projectName = projectData.name || projectData.title;
+      const projectSlug = projectData.slug || generateSlug(projectName);
+      
+      const projectFields = {
+        title: projectData.title,
+        description: projectData.description || null,
+        overview_quote: projectData.overview_quote || null,
+        developer: developerName,
+        // Set default values for required fields
+        name: projectName, // Always provide name field
+        slug: projectSlug, // Always provide slug field
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+      
+      // Insert into projects table
       const result = await knex('projects').insert(projectFields).returning('id');
-      const id = Array.isArray(result) ? result[0] : result;
+      console.log('Insert result:', result, 'Type:', typeof result, 'Is Array:', Array.isArray(result));
       
-      // Handle images if provided
-      if (images && Array.isArray(images) && images.length > 0) {
-        const imageRecords = images.map((image, index) => ({
-          project_id: id,
-          image_url: image.url || image,
-          display_order: image.display_order || index,
-          alt_text: image.alt_text || '',
-          is_primary: image.is_primary || false,
-          caption: image.caption || ''
-        }));
-        
-        await knex('project_images').insert(imageRecords);
+      // Extract ID from result - handle both array and object formats
+      let id: any;
+      if (Array.isArray(result)) {
+        id = result[0]?.id || result[0];
+      } else if (result && typeof result === 'object') {
+        id = (result as any).id;
+      } else {
+        id = result;
       }
       
-      // Fetch the created project with related data
+      console.log('Project created with ID:', id, 'ID Type:', typeof id);
+      
+      // Fetch the created project
       const data = await knex('projects').where('id', id).first();
       
-      return { data };
+      return { 
+        data: {
+          ...data,
+          // Ensure developer is returned as object if it exists
+          developer: developerName ? { name: developerName } : null
+        }
+      };
     } catch (err) {
       console.error('Error creating project:', err);
       ctx.throw(400, err);
     }
   },
 
-  // Update a project
+  // Update a project (Step 1: Partial update OR Step 2: Complete update)
   async update(ctx) {
     try {
       const { id } = ctx.params;
       const knex = strapi.db.connection;
       const updateData = ctx.request.body;
       
-      // Extract images from updateData to handle separately
-      const { images, ...projectFields } = updateData;
+      console.log('Updating project ID:', id, 'with data:', updateData);
       
-      // Update the project in projects table (excluding images field)
+      // Check if project exists
+      const existingProject = await knex('projects').where('id', id).first();
+      if (!existingProject) {
+        return ctx.notFound('Project not found');
+      }
+      
+      // Determine if this is a Step 1 (partial) or Step 2 (complete) update
+      const isStep1UpdateResult = isStep1Update(updateData);
+      const isStep2UpdateResult = isStep2Update(updateData);
+      
+      console.log('Update type - Step 1:', isStep1UpdateResult, 'Step 2:', isStep2UpdateResult);
+      
+      // Handle developer relationship
+      let developerName = existingProject.developer; // Keep existing if not provided
+      if (updateData.developer) {
+        if (typeof updateData.developer === 'object' && updateData.developer.name) {
+          developerName = updateData.developer.name;
+        } else if (typeof updateData.developer === 'string') {
+          developerName = updateData.developer;
+        }
+      }
+      
+      // Prepare update fields based on step type
+      let updateFields: any = {
+        updated_at: new Date()
+      };
+      
+      if (isStep1UpdateResult) {
+        // Step 1: Update only overview fields
+        if (updateData.title !== undefined) updateFields.title = updateData.title;
+        if (updateData.description !== undefined) updateFields.description = updateData.description;
+        if (updateData.overview_quote !== undefined) updateFields.overview_quote = updateData.overview_quote;
+        if (developerName !== existingProject.developer) updateFields.developer = developerName;
+      } else if (isStep2UpdateResult) {
+        // Step 2: Complete update - merge with existing data
+        updateFields = {
+          ...existingProject,
+          ...updateFields,
+          // Core fields
+          name: updateData.name || existingProject.name,
+          slug: updateData.slug || existingProject.slug || generateSlug(updateData.name || existingProject.name),
+          title: updateData.title || existingProject.title,
+          overview_quote: updateData.overview_quote || existingProject.overview_quote,
+          location: updateData.location || existingProject.location,
+          developer: developerName,
+          type: updateData.type || existingProject.type,
+          tenure: updateData.tenure || existingProject.tenure,
+          completion: updateData.completion || existingProject.completion,
+          units: updateData.units || existingProject.units,
+          total_units: updateData.total_units || existingProject.total_units,
+          price_from: updateData.price_from || existingProject.price_from,
+          price: updateData.price || existingProject.price,
+          price_per_sqft: updateData.price_per_sqft || existingProject.price_per_sqft,
+          bedrooms: updateData.bedrooms || existingProject.bedrooms,
+          bathrooms: updateData.bathrooms || existingProject.bathrooms,
+          size: updateData.size || existingProject.size,
+          total_floors: updateData.total_floors || existingProject.total_floors,
+          site_area: updateData.site_area || existingProject.site_area,
+          description: updateData.description || existingProject.description,
+          status: updateData.status || existingProject.status,
+          image_url_banner: updateData.image_url_banner || existingProject.image_url_banner,
+          // Handle JSON fields
+          facilities: updateData.facilities ? JSON.stringify(updateData.facilities) : existingProject.facilities,
+          images: updateData.images ? JSON.stringify(updateData.images) : existingProject.images
+        };
+      } else {
+        // Fallback: Update provided fields only
+        Object.keys(updateData).forEach(key => {
+          if (key !== 'images' && key !== 'facilities') {
+            updateFields[key] = updateData[key];
+          }
+        });
+        if (developerName !== existingProject.developer) updateFields.developer = developerName;
+        if (updateData.facilities) updateFields.facilities = JSON.stringify(updateData.facilities);
+        if (updateData.images) updateFields.images = JSON.stringify(updateData.images);
+      }
+      
+      // Update the project in projects table
       await knex('projects')
         .where('id', id)
-        .update(projectFields);
+        .update(updateFields);
       
-      // Handle images if provided
-      if (images !== undefined) {
+      // Handle images in project_images table if provided
+      if (updateData.images !== undefined && Array.isArray(updateData.images)) {
         // Delete existing images for this project
         await knex('project_images').where('project_id', id).del();
         
         // Insert new images if provided
-        if (Array.isArray(images) && images.length > 0) {
-          const imageRecords = images.map((image, index) => ({
+        if (updateData.images.length > 0) {
+          const imageRecords = updateData.images.map((image, index) => ({
             project_id: id,
-            image_url: image.url || image,
-            display_order: image.display_order || index,
-            alt_text: image.alt_text || '',
-            is_primary: image.is_primary || false,
-            caption: image.caption || ''
+            image_url: typeof image === 'string' ? image : (image.url || image),
+            display_order: typeof image === 'object' ? (image.display_order || index) : index,
+            alt_text: typeof image === 'object' ? (image.alt_text || '') : '',
+            is_primary: typeof image === 'object' ? (image.is_primary || false) : false,
+            caption: typeof image === 'object' ? (image.caption || '') : ''
           }));
           
           await knex('project_images').insert(imageRecords);
@@ -728,8 +859,17 @@ export default {
       // Fetch the updated project
       const data = await knex('projects').where('id', id).first();
       
-      return { data };
+      // Parse JSON fields for response
+      const responseData = {
+        ...data,
+        facilities: data.facilities ? JSON.parse(data.facilities) : [],
+        images: data.images ? JSON.parse(data.images) : [],
+        developer: developerName ? { name: developerName } : null
+      };
+      
+      return { data: responseData };
     } catch (err) {
+      console.error('Error updating project:', err);
       ctx.throw(400, err);
     }
   },

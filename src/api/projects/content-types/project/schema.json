@@ -10,9 +10,9 @@
     "comment": "Main projects table containing all property development information"
   },
   "attributes": {
-    "name": { "type": "string", "required": true },
+    "name": { "type": "string" },
     "project_name": { "type": "string" },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
+    "slug": { "type": "uid", "targetField": "name" },
     "title": { "type": "string" },
     "location": { "type": "string" },
     "address": { "type": "text" },
@@ -38,6 +38,9 @@
     "latitude": { "type": "string" },
     "longitude": { "type": "string" },
     "image_url_banner": { "type": "string" },
+    "overview_quote": { "type": "text" },
+    "facilities": { "type": "json" },
+    "images": { "type": "json" },
     "unit_pricing": {
       "type": "relation",
       "relation": "oneToMany",
