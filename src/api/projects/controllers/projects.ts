@@ -788,16 +788,16 @@ export default {
         if (updateData.overview_quote !== undefined) updateFields.overview_quote = updateData.overview_quote;
         if (developerName !== existingProject.developer) updateFields.developer = developerName;
       } else if (isStep2UpdateResult) {
-        // Step 2: Complete update - merge with existing data
+        // Step 2: Complete update - only include valid database fields
         updateFields = {
-          ...existingProject,
           ...updateFields,
-          // Core fields
+          // Core fields - only include fields that exist in the database schema
           name: updateData.name || existingProject.name,
           slug: updateData.slug || existingProject.slug || generateSlug(updateData.name || existingProject.name),
           title: updateData.title || existingProject.title,
           overview_quote: updateData.overview_quote || existingProject.overview_quote,
           location: updateData.location || existingProject.location,
+          address: updateData.address || existingProject.address,
           developer: developerName,
           type: updateData.type || existingProject.type,
           tenure: updateData.tenure || existingProject.tenure,
@@ -817,18 +817,29 @@ export default {
           image_url_banner: updateData.image_url_banner || existingProject.image_url_banner,
           // Handle JSON fields
           facilities: updateData.facilities ? JSON.stringify(updateData.facilities) : existingProject.facilities,
-          images: updateData.images ? JSON.stringify(updateData.images) : existingProject.images
+          images: updateData.images ? JSON.stringify(updateData.images) : existingProject.images,
+          features: updateData.features ? JSON.stringify(updateData.features) : existingProject.features
         };
       } else {
-        // Fallback: Update provided fields only
+        // Fallback: Update provided fields only - filter out invalid fields
+        const validFields = [
+          'name', 'slug', 'title', 'overview_quote', 'location', 'address', 'developer',
+          'type', 'tenure', 'completion', 'units', 'total_units', 'price_from', 'price',
+          'price_per_sqft', 'bedrooms', 'bathrooms', 'size', 'total_floors', 'site_area',
+          'description', 'status', 'image_url_banner', 'district', 'property_type',
+          'latitude', 'longitude', 'project_name'
+        ];
+        
         Object.keys(updateData).forEach(key => {
-          if (key !== 'images' && key !== 'facilities') {
+          if (validFields.includes(key)) {
             updateFields[key] = updateData[key];
           }
         });
+        
         if (developerName !== existingProject.developer) updateFields.developer = developerName;
         if (updateData.facilities) updateFields.facilities = JSON.stringify(updateData.facilities);
         if (updateData.images) updateFields.images = JSON.stringify(updateData.images);
+        if (updateData.features) updateFields.features = JSON.stringify(updateData.features);
       }
       
       // Update the project in projects table
