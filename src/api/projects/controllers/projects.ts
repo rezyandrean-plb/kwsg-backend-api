@@ -482,7 +482,7 @@ export default {
           .where(function() {
             this.where('project_id', projectId).orWhere('project_name', project.name);
           })
-          .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info'])
+          .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'available_unit', 'total_unit', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info'])
           .catch((err) => {
             console.error('Unit pricing query error:', err.message);
             return [];
@@ -630,7 +630,7 @@ export default {
           console.log(`Attempting fallback unit pricing query for project: ${project.name}`);
           unitPricing = await knex('unit_pricing')
             .where('project_name', project.name)
-            .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info']);
+            .select(['id', 'project_id', 'project_name', 'unit_type', 'price_from', 'price_to', 'available_unit', 'total_unit', 'bedrooms', 'bathrooms', 'size_sqft', 'price_per_sqft', 'currency', 'payment_terms', 'discount_info']);
           console.log(`Fallback unit pricing found ${unitPricing.length} records`);
         } catch (err) {
           console.error('Fallback unit_pricing query failed:', err.message);
